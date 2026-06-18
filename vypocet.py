@@ -149,9 +149,26 @@ DATABAZE = {
             "nekovove_spaliky": 1,
             "NBU": 0,
             "system_blokovani": ["TB5", "TB0", "SSOD"],
-            "max_rychlost": 80
+            "max_rychlost": 120
         },
 
+        "1822": {
+            "typ": "HDV",
+            "nazev": "Lokomotiva řady 1822",
+            "hmotnost": 80,
+            "delka": 19.30,
+            "pocet_naprav": 4,
+            "G": 24,
+            "P": 44,
+            "R": 0,
+            "R+Mg": 0,
+            "kotoucove_brzdy": 0,
+            "nekovove_spaliky": 1,
+            "NBU": 0,
+            "system_blokovani": ["TB5", "TB0", "SSOD"],
+            "max_rychlost": 120
+        },
+        
         "843": {
             "typ": "HDV",
             "nazev": "Motorový vůz řady 843",
