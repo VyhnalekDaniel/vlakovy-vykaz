@@ -149,7 +149,7 @@ DATABAZE = {
             "nekovove_spaliky": 1,
             "NBU": 0,
             "system_blokovani": ["TB5", "TB0", "SSOD"],
-            "max_rychlost": 80
+            "max_rychlost": 120
         },
 
         "843": {
