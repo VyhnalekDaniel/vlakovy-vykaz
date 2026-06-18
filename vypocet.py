@@ -149,24 +149,7 @@ DATABAZE = {
             "nekovove_spaliky": 1,
             "NBU": 0,
             "system_blokovani": ["TB5", "TB0", "SSOD"],
-            "max_rychlost": 120
-        },
-
-         "1822": {
-            "typ": "HDV",
-            "nazev": "Lokomotiva řady 1822",
-            "hmotnost": 80,
-            "delka": 19.30,
-            "pocet_naprav": 4,
-            "G": 55,
-            "P": 72,
-            "R": 95,
-            "R+Mg": 0,
-            "kotoucove_brzdy": 1,
-            "nekovove_spaliky": 0,
-            "NBU": 1,
-            "system_blokovani": ["TB5"],
-            "max_rychlost": 140
+            "max_rychlost": 80
         },
 
         "843": {

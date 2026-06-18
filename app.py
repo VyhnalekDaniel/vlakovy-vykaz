@@ -8,7 +8,7 @@ from vypocet import DATABAZE, HIERARCHIE_BLOKOVANI, ocisti_cislo, ziskej_klic_vo
 app = Flask(__name__)
 app.secret_key = environ.get("SECRET_KEY", "dev-secret-change-me")
 
-REZIMY = ["G", "P", "R", "R+Mg"]
+REZIMY = ["G", "P", "P+Mg", "P+E", "P+E 160", "R", "R+Mg", "R+E", "R+E 160"]
 STAVY_HDV = ["činné", "dopravované"]
 
 DEFAULT_INFO_VLAKU = {
@@ -46,11 +46,53 @@ def save_state(info_vlaku, seznam_vozidel, zadana_cisla):
 
 
 def norm_rezim(value):
-    rezim = (value or "P").strip().upper()
-    if rezim == "R+MG":
-        return "R+Mg"
+    rezim = (value or "P").strip().upper().replace("  ", " ")
+
+    aliasy = {
+        "P+MG": "P+Mg",
+        "P+E": "P+E",
+        "P+E160": "P+E 160",
+        "P+E 160": "P+E 160",
+        "R+MG": "R+Mg",
+        "R+E": "R+E",
+        "R+E160": "R+E 160",
+        "R+E 160": "R+E 160",
+    }
+
+    if rezim in aliasy:
+        return aliasy[rezim]
+
+    if rezim in ["G", "P", "R"]:
+        return rezim
+
     return rezim
 
+
+
+def dostupne_rezimy_vozidla(vozidlo):
+    dostupne = []
+    for rezim in REZIMY:
+        hodnota = vozidlo.get(rezim, 0)
+        if hodnota and hodnota > 0:
+            dostupne.append((rezim, hodnota))
+    return dostupne
+
+
+def dostupne_rezimy_text(vozidlo):
+    dostupne = dostupne_rezimy_vozidla(vozidlo)
+    if not dostupne:
+        return "žádný režim s brzdicí hmotností vyšší než 0"
+    return ", ".join(f"{rezim} ({hodnota})" for rezim, hodnota in dostupne)
+
+
+def zajisti_rezimy_v_databazi():
+    for cast in DATABAZE.values():
+        for vozidlo in cast.values():
+            for rezim in REZIMY:
+                vozidlo.setdefault(rezim, 0)
+
+
+zajisti_rezimy_v_databazi()
 
 def to_float(value, default=0):
     try:
@@ -74,8 +116,13 @@ def spocitej_skupinu(vozidla):
         "nekovove_spaliky": sum(1 for v in vozidla if v.get("nekovove_spaliky", 0) == 1),
         "G": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "G"),
         "P": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "P"),
+        "P+Mg": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "P+Mg"),
+        "P+E": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "P+E"),
+        "P+E 160": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "P+E 160"),
         "R": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "R"),
         "R+Mg": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "R+Mg"),
+        "R+E": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "R+E"),
+        "R+E 160": sum(1 for v in vozidla if v.get("rezim_brzdeni") == "R+E 160"),
     }
 
 
@@ -194,13 +241,21 @@ def pridej_vozidlo_do_stavu(seznam_vozidel, zadana_cisla, cislo, typ, rezim_brzd
 
     rezim_brzdeni = norm_rezim(rezim_brzdeni)
     if rezim_brzdeni not in REZIMY:
-        raise ValueError("Režim brzdění musí být G, P, R nebo R+Mg.")
+        raise ValueError("Neplatný režim brzdění.")
 
     vozidlo = deepcopy(cast_databaze[klic])
     vozidlo["zadane_cislo"] = cislo
     vozidlo["klic"] = klic
+
+    brzdici_vaha = vozidlo.get(rezim_brzdeni, 0)
+    if brzdici_vaha <= 0:
+        raise ValueError(
+            f"Vybraný režim {rezim_brzdeni} má u vozidla {vozidlo['nazev']} brzdicí hmotnost 0. "
+            f"Vyberte jiný režim brzdění. Dostupné režimy: {dostupne_rezimy_text(vozidlo)}."
+        )
+
     vozidlo["rezim_brzdeni"] = rezim_brzdeni
-    vozidlo["brzdici_vaha"] = vozidlo.get(rezim_brzdeni, 0)
+    vozidlo["brzdici_vaha"] = brzdici_vaha
 
     if typ == "HDV":
         stav = (stav or "činné").strip().lower()
@@ -271,7 +326,7 @@ def vykaz():
         return redirect(url_for("menu"))
     data = vytvor_vykaz(info_vlaku, seznam_vozidel)
     save_state(info_vlaku, seznam_vozidel, zadana_cisla)
-    return render_template("vykaz.html", data=data)
+    return render_template("vykaz.html", data=data, rezimy=REZIMY)
 
 
 @app.route("/odstranit", methods=["GET", "POST"])
@@ -336,7 +391,7 @@ def seznam_podrobne():
 
 @app.route("/databaze")
 def databaze():
-    return render_template("databaze.html", databaze=DATABAZE)
+    return render_template("databaze.html", databaze=DATABAZE, rezimy=REZIMY)
 
 
 @app.route("/smazat", methods=["POST"])

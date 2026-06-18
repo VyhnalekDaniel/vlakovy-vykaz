@@ -4,58 +4,70 @@
 
 <section class="panel">
   <h2>Záhlaví</h2>
-  <div class="kv"><span>Číslo vlaku</span><strong>{{ data.info.vlak }}</strong></div>
-  <div class="kv"><span>Datum odjezdu</span><strong>{{ data.info.datum_odjezdu }}</strong></div>
-  <div class="kv"><span>Výchozí stanice</span><strong>{{ data.info.vychozi_stanice }}</strong></div>
-  <div class="kv"><span>Konečná stanice</span><strong>{{ data.info.konecna_stanice }}</strong></div>
-  <div class="kv"><span>Poznámky</span><strong>{{ data.info.poznamky }}</strong></div>
+  <div class="grid two">
+    <div class="kv"><span>Číslo vlaku</span><strong>{{ data.info.vlak }}</strong></div>
+    <div class="kv"><span>Datum odjezdu</span><strong>{{ data.info.datum_odjezdu }}</strong></div>
+    <div class="kv"><span>Výchozí stanice</span><strong>{{ data.info.vychozi_stanice }}</strong></div>
+    <div class="kv"><span>Konečná stanice</span><strong>{{ data.info.konecna_stanice }}</strong></div>
+    <div class="kv wide"><span>Poznámky</span><strong>{{ data.info.poznamky }}</strong></div>
+  </div>
 </section>
 
 <section class="panel">
   <h2>Seznam vozidel</h2>
   <ol>
-    {% for v in data.vozidla %}<li>{{ v.zadane_cislo }}</li>{% endfor %}
+    {% for v in data.vozidla %}<li>{{ v.zadane_cislo }} — {{ v.nazev }} / {{ v.rezim_brzdeni }} / brzdicí váha {{ v.brzdici_vaha }}</li>{% endfor %}
   </ol>
 </section>
 
 <section class="panel table-wrap">
   <h2>Souhrn</h2>
   <table>
-    <thead><tr><th>Skupina</th><th>Počet</th><th>Hmotnost</th><th>Délka</th><th>Nápravy</th><th>Brzd. váha</th><th>Kotouč.</th><th>Špalíky</th><th>G</th><th>P</th><th>R</th><th>R+Mg</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Skupina</th><th>Počet</th><th>Hmotnost</th><th>Délka</th><th>Nápravy</th><th>Brzd. váha</th><th>Kotouč.</th><th>Špalíky</th>
+        {% for rezim in rezimy %}<th>{{ rezim }}</th>{% endfor %}
+      </tr>
+    </thead>
     <tbody>
-      {% for label, key in [('Činná HDV','cinna_hdv'),('Dopravovaná HDV','dopravovana_hdv'),('Vozy celkem','vozy'),('Souprava celkem','souprava'),('Vlak celkem','vlak')] %}
+    {% for key,label in [("cinna_hdv","Činná HDV"),("dopravovana_hdv","Dopravovaná HDV"),("vozy","Vozy celkem"),("souprava","Souprava celkem"),("vlak","Vlak celkem")] %}
       {% set r = data.vypocet[key] %}
-      <tr><td>{{ label }}</td><td>{{ r.pocet }}</td><td>{{ '%.1f'|format(r.hmotnost) }}</td><td>{{ '%.2f'|format(r.delka) }}</td><td>{{ r.pocet_naprav }}</td><td>{{ r.brzdici_vaha }}</td><td>{{ r.kotoucove_brzdy }}</td><td>{{ r.nekovove_spaliky }}</td><td>{{ r.G }}</td><td>{{ r.P }}</td><td>{{ r.R }}</td><td>{{ r['R+Mg'] }}</td></tr>
-      {% endfor %}
+      <tr>
+        <td>{{ label }}</td><td>{{ r.pocet }}</td><td>{{ '%.1f'|format(r.hmotnost) }}</td><td>{{ '%.2f'|format(r.delka) }}</td><td>{{ r.pocet_naprav }}</td><td>{{ r.brzdici_vaha }}</td><td>{{ r.kotoucove_brzdy }}</td><td>{{ r.nekovove_spaliky }}</td>
+        {% for rezim in rezimy %}<td>{{ r[rezim] }}</td>{% endfor %}
+      </tr>
+    {% endfor %}
     </tbody>
   </table>
 </section>
 
-<section class="panel results">
+<section class="panel">
   <h2>Výpočet vlaku</h2>
-  <div class="kv"><span>Celková délka vlaku</span><strong>{{ '%.2f'|format(data.vypocet.vlak.delka) }} m</strong></div>
-  <div class="kv"><span>Celkový počet náprav</span><strong>{{ data.vypocet.vlak.pocet_naprav }}</strong></div>
-  <div class="kv"><span>Celková hmotnost vlaku</span><strong>{{ data.vypocet.vlak.hmotnost }} t</strong></div>
-  <div class="kv"><span>Celková brzdicí váha</span><strong>{{ data.vypocet.vlak.brzdici_vaha }}</strong></div>
-  <div class="kv"><span>Skutečná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.skutecna_procenta) }} %</strong></div>
-  <div class="kv"><span>Potřebná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.potrebna_procenta) }} %</strong></div>
-  <div class="kv"><span>Chybějící brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.chybejici_procenta) }} %</strong></div>
-  <div class="kv"><span>Maximální rychlost podle vozidel</span><strong>{{ data.vypocet.max_rychlost }} km/h</strong></div>
-  <div class="kv highlight"><span>Rychlost po odečtení chybějících procent</span><strong>{{ data.rychlost_podle_brzd }} km/h</strong></div>
+  <div class="grid two">
+    <div class="kv"><span>Celková délka vlaku</span><strong>{{ '%.2f'|format(data.vypocet.vlak.delka) }} m</strong></div>
+    <div class="kv"><span>Počet náprav</span><strong>{{ data.vypocet.vlak.pocet_naprav }}</strong></div>
+    <div class="kv"><span>Hmotnost</span><strong>{{ data.vypocet.vlak.hmotnost }} t</strong></div>
+    <div class="kv"><span>Celková brzdicí váha</span><strong>{{ data.vypocet.vlak.brzdici_vaha }}</strong></div>
+    <div class="kv"><span>Skutečná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.skutecna_procenta) }} %</strong></div>
+    <div class="kv"><span>Potřebná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.potrebna_procenta) }} %</strong></div>
+    <div class="kv"><span>Chybějící brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.chybejici_procenta) }} %</strong></div>
+    <div class="kv"><span>Max. rychlost podle vozidel</span><strong>{{ data.vypocet.max_rychlost }} km/h</strong></div>
+    <div class="kv"><span>Rychlost podle brzd</span><strong>{{ data.rychlost_podle_brzd }} km/h</strong></div>
+  </div>
 </section>
 
 <section class="panel">
   <h2>Poznámky k vlaku</h2>
-  <div class="kv"><span>NBU</span><strong>{{ data.nbu }}</strong></div>
-  <div class="kv"><span>Systém blokování vlaku</span><strong>{{ data.system_blokovani }}</strong></div>
+  <p>{{ data.nbu }}</p>
+  <p>Systém blokování vlaku: <strong>{{ data.system_blokovani }}</strong></p>
 </section>
 
 <section class="panel">
   <h2>Zkouška brzdy</h2>
-  <div class="kv"><span>Zkouška brzdy</span><strong>{{ data.info.zkouska_brzdy }}</strong></div>
-  <div class="kv"><span>Místo zkoušky</span><strong>{{ data.info.misto_zkousky }}</strong></div>
-  <div class="kv"><span>Režim brzdy vlaku</span><strong>{{ data.info.rezim_brzdy_vlaku }}</strong></div>
-  <div class="kv"><span>Číslo vedoucího HDV</span><strong>{{ data.info.vedouci_hdv }}</strong></div>
-  <div class="kv"><span>Podpis strojvedoucího</span><strong>{{ data.info.podpis_strojvedouciho }}</strong></div>
+  <p>Zkouška brzdy: <strong>{{ data.info.zkouska_brzdy }}</strong></p>
+  <p>Místo zkoušky: <strong>{{ data.info.misto_zkousky }}</strong></p>
+  <p>Režim brzdy vlaku: <strong>{{ data.info.rezim_brzdy_vlaku }}</strong></p>
+  <p>Číslo vedoucího HDV: <strong>{{ data.info.vedouci_hdv }}</strong></p>
+  <p>Podpis strojvedoucího: <strong>{{ data.info.podpis_strojvedouciho }}</strong></p>
 </section>
 {% endblock %}
