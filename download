@@ -1,21 +1,6 @@
-<!doctype html>
-<html lang="cs"><head><meta charset="utf-8"><title>Tisk</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
-<body class="print-page">
-<h1>Výkaz vozidel a zpráva o brzdění</h1>
-<p><strong>{{ doc.vlak.druh }} {{ doc.vlak.cislo }}</strong> | {{ doc.vlak.vychozi_stanice }} → {{ doc.vlak.konecna_stanice }}</p>
-<p>Datum: {{ doc.vlak.datum }} | Sepsal: {{ doc.vlak.sepsal }} | Sepsáno v: {{ doc.vlak.sepsano_v }}</p>
-<h2>Vozidla</h2>
-<table><tr><th>#</th><th>Číslo</th><th>Název</th><th>Stav</th><th>Režim</th><th>BV</th></tr>{% for v in doc.vozidla %}<tr><td>{{ loop.index }}</td><td>{{ v.zadane_cislo }}</td><td>{{ v.nazev }}</td><td>{{ v.stav }}</td><td>{{ v.rezim_brzdeni }}</td><td>{{ v.brzdici_vaha }}</td></tr>{% endfor %}</table>
-<h2>Souhrn</h2>
-<p>Hmotnost {{ vypocet.vlak.hmotnost }} t, délka {{ '%.2f'|format(vypocet.vlak.delka) }} m, nápravy {{ vypocet.vlak.pocet_naprav }}, brzdicí váha {{ vypocet.vlak.brzdici_vaha }}.</p>
-<p>Skutečná BP {{ '%.2f'|format(skutecna) }} %, potřebná BP {{ doc.zob.potrebna_procenta }} %, chybějící {{ '%.2f'|format(chybi) }} %, rychlost {{ rychlost }} km/h.</p>
-<p>{{ nbu }} | Systém blokování: {{ blokovani }}</p>
-<h2>ZOB</h2>
-<p>Režim brzdy vlaku: {{ doc.zob.rezim_brzdy_vlaku }} | Doprovod: {{ doc.zob.doprovod }}</p>
-<p>{{ doc.zob.poznamky }}</p>
-<ul>{% for p in doc.zob.poznamky_vyber %}<li>{{ p }}</li>{% endfor %}</ul>
-<p>JZB: {{ doc.jzb.vykonana }} | {{ doc.jzb.kde }} | {{ doc.jzb.kdy }} | {{ doc.jzb.kym }} {{ doc.jzb.kym_jiny }}</p>
-<p>ÚZB: {{ doc.uzb.vykonana }} | {{ doc.uzb.kde }} | {{ doc.uzb.kdy }} | {{ doc.uzb.kym }} {{ doc.uzb.kym_jiny }}</p>
-<button onclick="window.print()">Tisk / Uložit jako PDF</button>
-<a href="{{ url_for('rekapitulace') }}">Zpět</a>
-</body></html>
+{% extends "base.html" %}
+{% block title %}Tisk{% endblock %}
+{% block content %}
+<div class="print-actions"><button onclick="window.print()">Tisk / uložit jako PDF</button> <a href="{{ url_for('rekapitulace') }}">Zpět</a></div>
+{% include "rekapitulace.html" %}
+{% endblock %}

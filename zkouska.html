@@ -4,26 +4,12 @@
 <div class="card">
   <h1>Přidat vozidlo</h1>
   <form method="post">
-    <label>Úplné číslo vozidla<input name="cislo" required></label>
-    <label>Typ
-      <select name="typ">
-        <option value="HDV">HDV</option>
-        <option value="VOZ">VOZ</option>
-      </select>
-    </label>
-    <label>Stav HDV
-      <select name="stav">
-        <option value="činné">činné</option>
-        <option value="dopravované">dopravované</option>
-      </select>
-    </label>
-    <label>Režim brzdění
-      <select name="rezim_brzdeni">
-        {% for r in rezimy %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
-      </select>
-    </label>
-    <button class="btn primary" type="submit">Přidat</button>
-    <a class="btn ghost" href="{{ url_for('vykaz_vozidel') }}">Zpět</a>
+    <label>Číslo vozidla</label><input name="cislo" required>
+    <label>Typ</label><select name="typ"><option>HDV</option><option>VOZ</option></select>
+    <label>Stav HDV</label><select name="stav"><option>činné</option><option>dopravované</option></select>
+    <label>Režim brzdění</label><select name="rezim_brzdeni">{% for r in rezimy %}<option>{{ r }}</option>{% endfor %}</select>
+    <button type="submit">Přidat</button>
   </form>
 </div>
+<div class="nav"><a href="{{ url_for('vykaz_vozidel') }}">← Zpět do výkazu</a></div>
 {% endblock %}

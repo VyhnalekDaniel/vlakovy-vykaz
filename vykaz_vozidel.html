@@ -4,15 +4,17 @@
 <div class="card">
   <h1>Libovolný vlak</h1>
   <form method="post">
-    <label>Číslo vlaku<input name="cislo" value="{{ vlak.cislo or '' }}" required></label>
-    <label>Druh vlaku<input name="druh" value="{{ vlak.druh or '' }}"></label>
-    <label>Datum<input name="datum" type="date" value="{{ vlak.datum or '' }}"></label>
-    <label>Výchozí stanice<input name="vychozi_stanice" value="{{ vlak.vychozi_stanice or '' }}"></label>
-    <label>Konečná stanice<input name="konecna_stanice" value="{{ vlak.konecna_stanice or '' }}"></label>
-    <label>Sepsáno v<input name="sepsano_v" value="{{ vlak.sepsano_v or '' }}"></label>
-    <label>Sepsal<input name="sepsal" value="{{ vlak.sepsal or '' }}"></label>
-    <label>Poznámky<textarea name="poznamky">{{ vlak.poznamky or '' }}</textarea></label>
-    <button class="btn primary" type="submit">Pokračovat do výkazu vozidel</button>
+    <label>Druh vlaku</label><input name="druh" placeholder="Sp, Os, Lv...">
+    <label>Číslo vlaku</label><input name="cislo" value="{{ cislo }}" required>
+    <label>Datum</label><input name="datum" type="date">
+    <label>Odjezd</label><input name="odjezd" placeholder="12:31">
+    <label>Výchozí stanice</label><input name="vychozi_stanice">
+    <label>Konečná stanice</label><input name="konecna_stanice">
+    <label>Sepsáno v</label><input name="sepsano_v">
+    <label>Sepsal</label><input name="sepsal">
+    <label>Poznámky k vlaku</label><textarea name="poznamky"></textarea>
+    <button type="submit">Pokračovat do výkazu vozidel</button>
   </form>
 </div>
+<div class="nav"><a href="{{ url_for('vlakova_dokumentace') }}">← Zpět</a></div>
 {% endblock %}

@@ -1,18 +1,17 @@
-# Vlakový výkaz - Flask
+# Vlakový výkaz
+
+Flask aplikace pro vlakovou dokumentaci.
 
 ## Render
+
 Build Command:
-```
+
+```bash
 pip install -r requirements.txt
 ```
 
 Start Command:
-```
-gunicorn app:app
-```
 
-`requirements.txt` smí obsahovat pouze knihovny, například:
-```
-flask
-gunicorn
+```bash
+gunicorn app:app
 ```

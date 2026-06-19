@@ -3,45 +3,38 @@
 {% block content %}
 <div class="card">
   <h1>Rekapitulace</h1>
-  <p><strong>{{ doc.vlak.druh }} {{ doc.vlak.cislo }}</strong> | {{ doc.vlak.vychozi_stanice }} → {{ doc.vlak.konecna_stanice }}</p>
-  <p>Datum: {{ doc.vlak.datum }} | Sepsal: {{ doc.vlak.sepsal }}</p>
+  <p><strong>{{ doc.vlak.druh }} {{ doc.vlak.cislo }}</strong> {{ doc.vlak.vychozi_stanice }} → {{ doc.vlak.konecna_stanice }}</p>
+  <p>Sepsal: {{ doc.vlak.sepsal }}</p>
 </div>
 <div class="card">
   <h2>Výpočet</h2>
-  <div class="summary-grid">
-    <div>Počet vozidel: <strong>{{ vypocet.vlak.pocet }}</strong></div>
-    <div>Hmotnost: <strong>{{ '%.1f'|format(vypocet.vlak.hmotnost) }} t</strong></div>
-    <div>Délka: <strong>{{ '%.2f'|format(vypocet.vlak.delka) }} m</strong></div>
-    <div>Nápravy: <strong>{{ vypocet.vlak.pocet_naprav }}</strong></div>
-    <div>Brzdicí váha: <strong>{{ vypocet.vlak.brzdici_vaha }}</strong></div>
-    <div>Skutečná brzdicí procenta: <strong>{{ '%.2f'|format(skutecna) }} %</strong></div>
-    <div>Potřebná brzdicí procenta: <strong>{{ doc.zob.potrebna_procenta }} %</strong></div>
-    <div>Chybějící brzdicí procenta: <strong>{{ '%.2f'|format(chybi) }} %</strong></div>
-    <div>Max. rychlost podle vozidel: <strong>{{ vypocet.max_rychlost }} km/h</strong></div>
-    <div>Rychlost podle brzd: <strong>{{ rychlost }} km/h</strong></div>
-    <div>NBU: <strong>{{ nbu }}</strong></div>
-    <div>Systém blokování: <strong>{{ blokovani }}</strong></div>
-  </div>
+  <p>Potřebná brzdicí procenta: {{ "%.2f"|format(vypocet.potrebna_procenta) }} %</p>
+  <p>Skutečná brzdicí procenta: {{ "%.2f"|format(vypocet.skutecna_procenta) }} %</p>
+  <p>Chybějící brzdicí procenta: {{ "%.2f"|format(vypocet.chybejici_procenta) }} %</p>
+  <p>Rychlost podle brzd: {{ vypocet.rychlost_podle_brzd }} km/h</p>
+  <p>Max. rychlost podle vozidel: {{ vypocet.max_rychlost }} km/h</p>
+  <p>{{ vypocet.nbu }} | Systém blokování: {{ vypocet.system_blokovani }}</p>
 </div>
 <div class="card">
   <h2>ZOB</h2>
-  <p>Režim brzdy vlaku: <strong>{{ doc.zob.rezim_brzdy_vlaku }}</strong></p>
+  <p>Režim brzdy vlaku: {{ doc.zob.rezim_brzdy_vlaku }}</p>
   <p>Doprovod: {{ doc.zob.doprovod }}</p>
   <p>Poznámky: {{ doc.zob.poznamky }}</p>
-  {% if doc.zob.poznamky_vyber %}
-  <ul>{% for p in doc.zob.poznamky_vyber %}<li>{{ p }}</li>{% endfor %}</ul>
-  {% endif %}
-  <p>JZB: {{ doc.jzb.vykonana }} | {{ doc.jzb.kde }} | {{ doc.jzb.kdy }} | {{ doc.jzb.kym }} {% if doc.jzb.kym_jiny %}({{ doc.jzb.kym_jiny }}){% endif %}</p>
-  <p>ÚZB: {{ doc.uzb.vykonana }} | {{ doc.uzb.kde }} | {{ doc.uzb.kdy }} | {{ doc.uzb.kym }} {% if doc.uzb.kym_jiny %}({{ doc.uzb.kym_jiny }}){% endif %}</p>
+  {% if doc.zob.poznamky_vybrane %}<ul>{% for p in doc.zob.poznamky_vybrane %}<li>{{ p }}</li>{% endfor %}</ul>{% endif %}
+</div>
+<div class="card">
+  <h2>JZB / ÚZB</h2>
+  <p>JZB: {{ doc.jzb.vykonana }} | {{ doc.jzb.kde }} | {{ doc.jzb.kdy }} | {{ doc.jzb.kym }} {{ doc.jzb.kym_jiny }}</p>
+  <p>ÚZB: {{ doc.uzb.vykonana }} | {{ doc.uzb.kde }} | {{ doc.uzb.kdy }} | {{ doc.uzb.kym }} {{ doc.uzb.kym_jiny }}</p>
 </div>
 <div class="card">
   <h2>Vozidla</h2>
-  {% for v in doc.vozidla %}<p>{{ loop.index }}. {{ v.zadane_cislo }} | {{ v.nazev }} | {{ v.rezim_brzdeni }} | BV {{ v.brzdici_vaha }}</p>{% endfor %}
+  <ol>{% for v in vozidla %}<li>{{ v.zadane_cislo }} - {{ v.nazev }} | {{ v.stav }} | {{ v.rezim_brzdeni }} | {{ v.brzdici_vaha }}</li>{% endfor %}</ol>
 </div>
-<div class="toolbar">
-  <a class="btn" href="{{ url_for('vykaz_vozidel') }}">Zpět do výkazu vozidel</a>
-  <a class="btn" href="{{ url_for('index') }}">Zpět do hlavního menu</a>
-  <a class="btn" href="{{ url_for('zob') }}">Upravit ZOB</a>
-  <a class="btn primary" href="{{ url_for('tisk') }}">Tisk / PDF</a>
+<div class="grid two">
+  <a class="big-button" href="{{ url_for('tisk') }}">Tisk / PDF</a>
+  <a class="big-button" href="{{ url_for('vykaz_vozidel') }}">Zpět do výkazu vozidel</a>
+  <a class="big-button" href="{{ url_for('zob') }}">Upravit ZOB</a>
+  <a class="big-button" href="{{ url_for('index') }}">Hlavní menu</a>
 </div>
 {% endblock %}

@@ -3,31 +3,15 @@
 {% block content %}
 <div class="card">
   <h1>Vlak z JŘ</h1>
-  <form method="post" class="form-row">
-    <input type="hidden" name="action" value="hledat">
-    <label>Číslo vlaku<input name="cislo" value="{{ hledano }}" required></label>
-    <button class="btn primary" type="submit">Najít vlak</button>
-  </form>
-</div>
-{% if nalezeny %}
-<div class="card success-card">
-  <h2>Nalezený vlak</h2>
   <form method="post">
-    <input type="hidden" name="action" value="ulozit">
-    <input type="hidden" name="cislo" value="{{ hledano }}">
-    <label>Druh vlaku<input name="druh" value="{{ nalezeny.druh }}"></label>
-    <label>Datum<input name="datum" type="date"></label>
-    <label>Výchozí stanice<input name="vychozi_stanice" value="{{ nalezeny.vychozi_stanice }}"></label>
-    <label>Konečná stanice<input name="konecna_stanice" value="{{ nalezeny.konecna_stanice }}"></label>
-    <label>Sepsáno v<input name="sepsano_v"></label>
-    <label>Sepsal<input name="sepsal"></label>
-    <label>Poznámky<textarea name="poznamky"></textarea></label>
-    <button class="btn primary" type="submit">Pokračovat do výkazu vozidel</button>
+    <label>Číslo vlaku</label>
+    <input name="cislo" inputmode="numeric" required>
+    <label>Datum</label>
+    <input name="datum" type="date">
+    <label>Sepsal</label>
+    <input name="sepsal">
+    <button type="submit">Načíst vlak</button>
   </form>
 </div>
-{% elif hledano %}
-<div class="card">
-  <a class="btn primary" href="{{ url_for('libovolny_vlak', cislo=hledano) }}">Přidat vlak ručně</a>
-</div>
-{% endif %}
+<div class="nav"><a href="{{ url_for('vlakova_dokumentace') }}">← Zpět</a></div>
 {% endblock %}

@@ -3,79 +3,198 @@ from os import environ
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
-from vypocet import (
-    DATABAZE,
-    DATABAZE_VLAKU,
-    TAHAK_CISEL_VOZIDEL,
-    REZIMY_BRZDENI,
-    najdi_vlak,
-    otoc_jednotku,
-    otoc_vlak,
-    prazdna_dokumentace,
-    presun_vozidlo,
-    pridej_vozidlo,
-    skutecna_brzdici_procenta,
-    vytvor_vypocet,
-    vypocitej_rychlost_podle_brzd,
-    vyhodnot_nbu,
-    vyhodnot_system_blokovani,
-)
+from vypocet import DATABAZE, HIERARCHIE_BLOKOVANI, ziskej_klic_vozidla
 
 app = Flask(__name__)
-app.secret_key = environ.get("SECRET_KEY", "vlakovy_web_dev_secret")
+app.secret_key = environ.get("SECRET_KEY", "dev-key-vlakovy-vykaz")
 
-KDO_VYKONAL_MOZNOSTI = [
-    "Strojvedoucí",
-    "Posunovač",
-    "Vozmistr",
-    "Obsluha vlaku",
-    "Výpravčí",
-    "Jiný ŽDP",
+REZIMY_BRZDENI = [
+    "G", "P", "P+Mg", "P+E", "P+E 160", "R", "R+Mg", "R+E", "R+E 160"
 ]
 
+VYKONAL_MOZNOSTI = [
+    "Strojvedoucí", "Posunovač", "Vozmistr", "Obsluha vlaku", "Výpravčí", "Jiný ŽDP"
+]
+
+# Sem si později dopíšeš vlastní poznámky ke zprávě o brzdění.
 POZNAMKY_ZOB_MOZNOSTI = [
-    # Sem si později dopiš vlastní přednastavené poznámky, například:
-    # "Vlak brzděn v režimu P.",
+    # "Příklad poznámky ke zprávě o brzdění",
 ]
 
+DATABAZE_VLAKU = {
+    # "92665": {
+    #     "druh": "Sp",
+    #     "cislo": "92665",
+    #     "vychozi_stanice": "Pňovany",
+    #     "konecna_stanice": "Plzeň hl.n.",
+    #     "odjezd": "12:31",
+    # },
+}
 
-def get_doc():
-    if "dokumentace" not in session:
-        session["dokumentace"] = prazdna_dokumentace()
-    return session["dokumentace"]
+TAHAK_CISEL_VOZIDEL = {
+    # "Řada 845": ["9454 16 51 203-2", "9454 16 50 203-3"],
+}
 
 
-def save_doc(doc):
-    session["dokumentace"] = doc
-    session.modified = True
-
-
-def vlak_z_formulare(zdroj):
+def nova_dokumentace():
     return {
-        "cislo": request.form.get("cislo", "").strip(),
-        "druh": request.form.get("druh", "").strip(),
-        "datum": request.form.get("datum", "").strip(),
-        "vychozi_stanice": request.form.get("vychozi_stanice", "").strip(),
-        "konecna_stanice": request.form.get("konecna_stanice", "").strip(),
-        "sepsano_v": request.form.get("sepsano_v", "").strip(),
-        "sepsal": request.form.get("sepsal", "").strip(),
-        "poznamky": request.form.get("poznamky", "").strip(),
-        "zdroj": zdroj,
+        "vlak": {
+            "druh": "", "cislo": "", "datum": "", "odjezd": "",
+            "vychozi_stanice": "", "konecna_stanice": "", "sepsano_v": "",
+            "sepsal": "", "poznamky": "", "zdroj": "",
+        },
+        "vozidla": [],
+        "zob": {
+            "potrebna_procenta": 0, "rezim_brzdy_vlaku": "", "doprovod": "",
+            "poznamky": "", "poznamky_vybrane": [],
+        },
+        "jzb": {"vykonana": "NE", "kde": "", "kdy": "", "kym": "", "kym_jiny": ""},
+        "uzb": {"vykonana": "NE", "kde": "", "kdy": "", "kym": "", "kym_jiny": ""},
     }
 
 
-def uloz_nebo_potvrd_vlak(novy_vlak):
-    doc = get_doc()
-    stary_cislo = doc.get("vlak", {}).get("cislo", "")
-    meni_se_vlak = stary_cislo and novy_vlak.get("cislo") and stary_cislo != novy_vlak.get("cislo")
-    ma_vozidla = len(doc.get("vozidla", [])) > 0
-    if meni_se_vlak and ma_vozidla:
-        session["pending_vlak"] = novy_vlak
-        session.modified = True
-        return redirect(url_for("potvrdit_zmenu_vlaku"))
-    doc["vlak"] = novy_vlak
-    save_doc(doc)
-    return redirect(url_for("vykaz_vozidel"))
+def get_doc():
+    if "doc" not in session:
+        session["doc"] = nova_dokumentace()
+    return session["doc"]
+
+
+def save_doc(doc):
+    session["doc"] = doc
+    session.modified = True
+
+
+def reset_doc():
+    session["doc"] = nova_dokumentace()
+    session.pop("pending_vlak", None)
+    session.modified = True
+
+
+def normalizuj_rezim(rezim):
+    rezim = (rezim or "").strip()
+    if rezim.upper() == "R+MG":
+        return "R+Mg"
+    if rezim.upper() == "P+MG":
+        return "P+Mg"
+    return rezim
+
+
+def dostupne_rezimy_vozidla(vozidlo):
+    dostupne = []
+    for rezim in REZIMY_BRZDENI:
+        hodnota = vozidlo.get(rezim, 0)
+        if hodnota and hodnota > 0:
+            dostupne.append(f"{rezim} ({hodnota})")
+    return dostupne
+
+
+def najdi_vozidlo_v_databazi(cislo, typ):
+    typ = (typ or "").upper().strip()
+    if typ not in ["HDV", "VOZ"]:
+        return None, "Typ musí být HDV nebo VOZ."
+
+    klic = ziskej_klic_vozidla(cislo, typ)
+    if not klic:
+        return None, "Z čísla vozidla se nepodařilo získat klíč."
+
+    cast = DATABAZE["HDV"] if typ == "HDV" else DATABAZE["VOZY"]
+    if klic not in cast:
+        return None, f"V databázi není vozidlo s klíčem {klic}."
+
+    vozidlo = deepcopy(cast[klic])
+    vozidlo["zadane_cislo"] = cislo
+    vozidlo["klic"] = klic
+    return vozidlo, ""
+
+
+def nejvyssi_system_vozidla(vozidlo):
+    systemy = vozidlo.get("system_blokovani", [])
+    if isinstance(systemy, str):
+        systemy = [systemy]
+    platne = [s for s in systemy if s in HIERARCHIE_BLOKOVANI]
+    if not platne:
+        return "nezjištěno"
+    return max(platne, key=lambda s: HIERARCHIE_BLOKOVANI.index(s))
+
+
+def vyhodnot_system_blokovani(vozidla):
+    nejvyssi_systemy = []
+    for vozidlo in vozidla:
+        system = nejvyssi_system_vozidla(vozidlo)
+        if system in HIERARCHIE_BLOKOVANI:
+            nejvyssi_systemy.append(system)
+    if not nejvyssi_systemy:
+        return "nezjištěno"
+    return min(nejvyssi_systemy, key=lambda s: HIERARCHIE_BLOKOVANI.index(s))
+
+
+def vyhodnot_nbu(vozidla):
+    if not vozidla:
+        return "NBU neaktivní"
+    return "NBU aktivní" if all(v.get("NBU", 0) == 1 for v in vozidla) else "NBU neaktivní"
+
+
+def spocitej_skupinu(vozidla):
+    data = {
+        "pocet": len(vozidla),
+        "hmotnost": sum(v.get("hmotnost", 0) for v in vozidla),
+        "delka": sum(v.get("delka", 0) for v in vozidla),
+        "pocet_naprav": sum(v.get("pocet_naprav", 0) for v in vozidla),
+        "brzdici_vaha": sum(v.get("brzdici_vaha", 0) for v in vozidla),
+        "kotoucove_brzdy": sum(1 for v in vozidla if v.get("kotoucove_brzdy", 0) == 1),
+        "nekovove_spaliky": sum(1 for v in vozidla if v.get("nekovove_spaliky", 0) == 1),
+    }
+    for rezim in REZIMY_BRZDENI:
+        data[rezim] = sum(1 for v in vozidla if v.get("rezim_brzdeni") == rezim)
+    return data
+
+
+def vytvor_vypocet(doc):
+    vozidla = doc.get("vozidla", [])
+    cinna_hdv = [v for v in vozidla if v.get("typ") == "HDV" and v.get("stav") == "činné"]
+    dopravovana_hdv = [v for v in vozidla if v.get("typ") == "HDV" and v.get("stav") == "dopravované"]
+    vozy = [v for v in vozidla if v.get("typ") == "VOZ"]
+
+    souprava = dopravovana_hdv + vozy
+    vlak = cinna_hdv + dopravovana_hdv + vozy
+
+    max_rychlost = min((v.get("max_rychlost", 0) for v in vlak), default=0)
+    celkova_hmotnost = sum(v.get("hmotnost", 0) for v in vlak)
+    brzdici_vaha = sum(v.get("brzdici_vaha", 0) for v in vlak)
+    skutecna_procenta = (brzdici_vaha / celkova_hmotnost) * 100 if celkova_hmotnost else 0
+
+    try:
+        potrebna_procenta = float(doc.get("zob", {}).get("potrebna_procenta", 0) or 0)
+    except ValueError:
+        potrebna_procenta = 0
+
+    chybejici_procenta = max(0, potrebna_procenta - skutecna_procenta)
+    rychlost_podle_brzd = max(0, max_rychlost - chybejici_procenta)
+
+    return {
+        "cinna_hdv": spocitej_skupinu(cinna_hdv),
+        "dopravovana_hdv": spocitej_skupinu(dopravovana_hdv),
+        "vozy": spocitej_skupinu(vozy),
+        "souprava": spocitej_skupinu(souprava),
+        "vlak": spocitej_skupinu(vlak),
+        "max_rychlost": max_rychlost,
+        "skutecna_procenta": skutecna_procenta,
+        "potrebna_procenta": potrebna_procenta,
+        "chybejici_procenta": chybejici_procenta,
+        "rychlost_podle_brzd": int(rychlost_podle_brzd),
+        "nbu": vyhodnot_nbu(vlak),
+        "system_blokovani": vyhodnot_system_blokovani(vlak),
+    }
+
+
+def uloz_zob_z_formulare(doc):
+    zob = doc["zob"]
+    zob["potrebna_procenta"] = request.form.get("potrebna_procenta", zob.get("potrebna_procenta", 0))
+    zob["rezim_brzdy_vlaku"] = request.form.get("rezim_brzdy_vlaku", zob.get("rezim_brzdy_vlaku", ""))
+    zob["doprovod"] = request.form.get("doprovod", zob.get("doprovod", ""))
+    zob["poznamky"] = request.form.get("poznamky", zob.get("poznamky", ""))
+    zob["poznamky_vybrane"] = request.form.getlist("poznamky_zob")
+    doc["zob"] = zob
 
 
 @app.route("/")
@@ -84,10 +203,9 @@ def index():
 
 
 @app.route("/nova-dokumentace")
-def nova_dokumentace():
-    session["dokumentace"] = prazdna_dokumentace()
-    session.pop("pending_vlak", None)
-    flash("Založena nová vlaková dokumentace.", "ok")
+def nova_dokumentace_route():
+    reset_doc()
+    flash("Byla založena nová vlaková dokumentace.")
     return redirect(url_for("vlakova_dokumentace"))
 
 
@@ -98,150 +216,178 @@ def vlakova_dokumentace():
 
 @app.route("/vlak-z-jr", methods=["GET", "POST"])
 def vlak_z_jr():
-    nalezeny = None
-    hledano = ""
+    doc = get_doc()
     if request.method == "POST":
-        action = request.form.get("action")
-        if action == "hledat":
-            hledano = request.form.get("cislo", "").strip()
-            nalezeny = najdi_vlak(hledano)
-            if not nalezeny:
-                flash("Vlak nebyl nalezen v databázi. Můžeš ho přidat ručně.", "warn")
-        elif action == "ulozit":
-            cislo = request.form.get("cislo", "").strip()
-            data = najdi_vlak(cislo)
-            if not data:
-                flash("Vlak už není v databázi nalezen. Zadej ho ručně.", "error")
-                return redirect(url_for("libovolny_vlak", cislo=cislo))
-            novy_vlak = vlak_z_formulare("JŘ")
-            return uloz_nebo_potvrd_vlak(novy_vlak)
-    return render_template("vlak_z_jr.html", nalezeny=nalezeny, hledano=hledano)
+        cislo = request.form.get("cislo", "").strip()
+        vlak = DATABAZE_VLAKU.get(cislo)
+        if not vlak:
+            flash("Vlak nebyl nalezen v databázi. Můžete ho zadat jako libovolný vlak.")
+            return redirect(url_for("libovolny_vlak", cislo=cislo))
+        novy_vlak = {
+            "druh": vlak.get("druh", ""),
+            "cislo": vlak.get("cislo", cislo),
+            "datum": request.form.get("datum", ""),
+            "odjezd": vlak.get("odjezd", ""),
+            "vychozi_stanice": vlak.get("vychozi_stanice", ""),
+            "konecna_stanice": vlak.get("konecna_stanice", ""),
+            "sepsano_v": vlak.get("vychozi_stanice", ""),
+            "sepsal": request.form.get("sepsal", ""),
+            "poznamky": "",
+            "zdroj": "JŘ",
+        }
+        if doc.get("vozidla") and doc["vlak"].get("cislo") != cislo:
+            session["pending_vlak"] = novy_vlak
+            return redirect(url_for("potvrdit_zmenu_vlaku"))
+        doc["vlak"] = novy_vlak
+        save_doc(doc)
+        return redirect(url_for("vykaz_vozidel"))
+    return render_template("vlak_z_jr.html")
 
 
 @app.route("/libovolny-vlak", methods=["GET", "POST"])
 def libovolny_vlak():
     doc = get_doc()
     if request.method == "POST":
-        return uloz_nebo_potvrd_vlak(vlak_z_formulare("ručně"))
-    vychozi = deepcopy(doc.get("vlak", {}))
-    if request.args.get("cislo"):
-        vychozi["cislo"] = request.args.get("cislo")
-    return render_template("libovolny_vlak.html", vlak=vychozi)
+        novy_vlak = {
+            "druh": request.form.get("druh", "").strip(),
+            "cislo": request.form.get("cislo", "").strip(),
+            "datum": request.form.get("datum", "").strip(),
+            "odjezd": request.form.get("odjezd", "").strip(),
+            "vychozi_stanice": request.form.get("vychozi_stanice", "").strip(),
+            "konecna_stanice": request.form.get("konecna_stanice", "").strip(),
+            "sepsano_v": request.form.get("sepsano_v", "").strip(),
+            "sepsal": request.form.get("sepsal", "").strip(),
+            "poznamky": request.form.get("poznamky", "").strip(),
+            "zdroj": "ručně",
+        }
+        if doc.get("vozidla") and doc["vlak"].get("cislo") != novy_vlak["cislo"]:
+            session["pending_vlak"] = novy_vlak
+            return redirect(url_for("potvrdit_zmenu_vlaku"))
+        doc["vlak"] = novy_vlak
+        save_doc(doc)
+        return redirect(url_for("vykaz_vozidel"))
+    return render_template("libovolny_vlak.html", cislo=request.args.get("cislo", ""))
 
 
 @app.route("/potvrdit-zmenu-vlaku", methods=["GET", "POST"])
 def potvrdit_zmenu_vlaku():
+    doc = get_doc()
     pending = session.get("pending_vlak")
     if not pending:
         return redirect(url_for("vlakova_dokumentace"))
     if request.method == "POST":
-        doc = get_doc()
         doc["vlak"] = pending
-        if request.form.get("vozidla") == "smazat":
+        if request.form.get("akce") == "vymazat":
             doc["vozidla"] = []
-            flash("Vlak byl změněn a výkaz vozidel byl vymazán.", "ok")
-        else:
-            flash("Vlak byl změněn a vozidla zůstala ve výkazu.", "ok")
         save_doc(doc)
         session.pop("pending_vlak", None)
         return redirect(url_for("vykaz_vozidel"))
-    return render_template("potvrdit_zmenu_vlaku.html", pending=pending, doc=get_doc())
+    return render_template("potvrdit_zmenu_vlaku.html", vlak=pending, pocet_vozidel=len(doc.get("vozidla", [])))
 
 
 @app.route("/vykaz-vozidel")
 def vykaz_vozidel():
     doc = get_doc()
-    vypocet = vytvor_vypocet(doc)
-    return render_template("vykaz_vozidel.html", doc=doc, vypocet=vypocet)
+    return render_template("vykaz_vozidel.html", doc=doc, vypocet=vytvor_vypocet(doc), vozidla=doc.get("vozidla", []))
 
 
 @app.route("/pridat-vozidlo", methods=["GET", "POST"])
-def pridat_vozidlo_route():
+def pridat_vozidlo():
     doc = get_doc()
     if request.method == "POST":
-        ok, zprava = pridej_vozidlo(
-            doc,
-            request.form.get("cislo"),
-            request.form.get("typ"),
-            request.form.get("rezim_brzdeni"),
-            request.form.get("stav"),
-        )
-        if ok:
-            save_doc(doc)
-            flash(zprava, "ok")
-            return redirect(url_for("vykaz_vozidel"))
-        flash(zprava, "error")
+        cislo = request.form.get("cislo", "").strip()
+        typ = request.form.get("typ", "").strip().upper()
+        rezim = normalizuj_rezim(request.form.get("rezim_brzdeni", ""))
+        stav = request.form.get("stav", "").strip()
+        if not cislo:
+            flash("Zadejte číslo vozidla.")
+            return redirect(url_for("pridat_vozidlo"))
+        vozidlo, chyba = najdi_vozidlo_v_databazi(cislo, typ)
+        if chyba:
+            flash(chyba)
+            return redirect(url_for("pridat_vozidlo"))
+        brzdici_vaha = vozidlo.get(rezim, 0)
+        if brzdici_vaha <= 0:
+            dostupne = dostupne_rezimy_vozidla(vozidlo)
+            flash(f"Vybraný režim {rezim} má u vozidla {vozidlo['nazev']} brzdicí hmotnost 0. Dostupné režimy: {', '.join(dostupne) if dostupne else 'žádné' }.")
+            return redirect(url_for("pridat_vozidlo"))
+        vozidlo["rezim_brzdeni"] = rezim
+        vozidlo["brzdici_vaha"] = brzdici_vaha
+        if typ == "HDV":
+            if stav not in ["činné", "dopravované"]:
+                flash("U HDV vyberte stav činné nebo dopravované.")
+                return redirect(url_for("pridat_vozidlo"))
+            vozidlo["stav"] = stav
+        else:
+            vozidlo["stav"] = "vůz"
+        doc["vozidla"].append(vozidlo)
+        save_doc(doc)
+        flash(f"Přidáno vozidlo: {vozidlo['zadane_cislo']}")
+        return redirect(url_for("vykaz_vozidel"))
     return render_template("pridat_vozidlo.html", rezimy=REZIMY_BRZDENI)
 
 
-@app.route("/vozidlo/<int:index>/smazat", methods=["POST"])
-def smazat_vozidlo(index):
+@app.route("/odstranit-vozidlo/<int:index>", methods=["POST"])
+def odstranit_vozidlo(index):
     doc = get_doc()
-    if 0 <= index < len(doc.get("vozidla", [])):
-        cislo = doc["vozidla"][index].get("zadane_cislo")
-        doc["vozidla"].pop(index)
+    if 0 <= index < len(doc["vozidla"]):
+        odebrane = doc["vozidla"].pop(index)
+        flash(f"Odstraněno vozidlo: {odebrane.get('zadane_cislo', '')}")
+    save_doc(doc)
+    return redirect(url_for("vykaz_vozidel"))
+
+
+@app.route("/posun-vozidlo/<int:index>/<smer>", methods=["POST"])
+def posun_vozidlo(index, smer):
+    doc = get_doc()
+    vozidla = doc.get("vozidla", [])
+    if smer == "nahoru" and index > 0:
+        vozidla[index - 1], vozidla[index] = vozidla[index], vozidla[index - 1]
+    elif smer == "dolu" and index < len(vozidla) - 1:
+        vozidla[index + 1], vozidla[index] = vozidla[index], vozidla[index + 1]
+    save_doc(doc)
+    return redirect(url_for("vykaz_vozidel"))
+
+
+@app.route("/presun-vozidlo", methods=["POST"])
+def presun_vozidlo():
+    doc = get_doc()
+    vozidla = doc.get("vozidla", [])
+    try:
+        index = int(request.form.get("index", "-1"))
+        nova_pozice = int(request.form.get("nova_pozice", "0")) - 1
+    except ValueError:
+        flash("Pozice musí být číslo.")
+        return redirect(url_for("vykaz_vozidel"))
+    if 0 <= index < len(vozidla) and 0 <= nova_pozice < len(vozidla):
+        vozidlo = vozidla.pop(index)
+        vozidla.insert(nova_pozice, vozidlo)
         save_doc(doc)
-        flash(f"Vozidlo {cislo} bylo odstraněno.", "ok")
     return redirect(url_for("vykaz_vozidel"))
 
 
-@app.route("/vozidlo/<int:index>/nahoru", methods=["POST"])
-def vozidlo_nahoru(index):
+@app.route("/otoc-vlak", methods=["POST"])
+def otoc_vlak():
     doc = get_doc()
-    presun_vozidlo(doc, index, index - 1)
+    doc["vozidla"].reverse()
     save_doc(doc)
+    flash("Vlak byl otočen.")
     return redirect(url_for("vykaz_vozidel"))
 
 
-@app.route("/vozidlo/<int:index>/dolu", methods=["POST"])
-def vozidlo_dolu(index):
+@app.route("/otoc-jednotku", methods=["POST"])
+def otoc_jednotku():
     doc = get_doc()
-    presun_vozidlo(doc, index, index + 1)
+    vozy = [v for v in doc["vozidla"] if v.get("typ") == "VOZ"]
+    vozy.reverse()
+    idx = 0
+    for i in range(len(doc["vozidla"])):
+        if doc["vozidla"][i].get("typ") == "VOZ":
+            doc["vozidla"][i] = vozy[idx]
+            idx += 1
     save_doc(doc)
+    flash("Jednotka byla otočena.")
     return redirect(url_for("vykaz_vozidel"))
-
-
-@app.route("/vozidlo/<int:index>/presunout", methods=["POST"])
-def vozidlo_presunout(index):
-    doc = get_doc()
-    try:
-        nova_pozice = int(request.form.get("nova_pozice", "1")) - 1
-    except ValueError:
-        nova_pozice = index
-    presun_vozidlo(doc, index, nova_pozice)
-    save_doc(doc)
-    return redirect(url_for("vykaz_vozidel"))
-
-
-@app.route("/otocit-vlak", methods=["POST"])
-def otocit_vlak_route():
-    doc = get_doc()
-    otoc_vlak(doc)
-    save_doc(doc)
-    flash("Vlak byl otočen. Otočily se pouze vozy, HDV zůstala na svých pozicích.", "ok")
-    return redirect(url_for("vykaz_vozidel"))
-
-
-@app.route("/otocit-jednotku", methods=["POST"])
-def otocit_jednotku_route():
-    doc = get_doc()
-    otoc_jednotku(doc)
-    save_doc(doc)
-    flash("Jednotka byla otočena.", "ok")
-    return redirect(url_for("vykaz_vozidel"))
-
-
-def uloz_zob_z_formulare(doc):
-    zob = doc.setdefault("zob", {})
-    try:
-        zob["potrebna_procenta"] = float((request.form.get("potrebna_procenta") or "0").replace(",", "."))
-    except ValueError:
-        zob["potrebna_procenta"] = 0
-    zob["rezim_brzdy_vlaku"] = request.form.get("rezim_brzdy_vlaku", "P")
-    zob["doprovod"] = request.form.get("doprovod", "").strip()
-    zob["poznamky"] = request.form.get("poznamky", "").strip()
-    zob["poznamky_vyber"] = request.form.getlist("poznamky_vyber")
-    save_doc(doc)
 
 
 @app.route("/zob", methods=["GET", "POST"])
@@ -249,50 +395,51 @@ def zob():
     doc = get_doc()
     if request.method == "POST":
         uloz_zob_z_formulare(doc)
-        action = request.form.get("action")
-        if action == "jzb":
-            return redirect(url_for("zkouska_brzdy", typ="jzb"))
-        if action == "uzb":
-            return redirect(url_for("zkouska_brzdy", typ="uzb"))
-        if action == "rekapitulace":
-            return redirect(url_for("rekapitulace"))
-        flash("Zpráva o brzdění byla uložena.", "ok")
+        save_doc(doc)
+        akce = request.form.get("akce")
+        if akce == "jzb":
+            return redirect(url_for("jzb"))
+        if akce == "uzb":
+            return redirect(url_for("uzb"))
+        return redirect(url_for("rekapitulace"))
     return render_template("zob.html", doc=doc, rezimy=REZIMY_BRZDENI, poznamky_moznosti=POZNAMKY_ZOB_MOZNOSTI)
 
 
-@app.route("/zkouska/<typ>", methods=["GET", "POST"])
-def zkouska_brzdy(typ):
-    if typ not in ["jzb", "uzb"]:
-        return redirect(url_for("zob"))
+@app.route("/jzb", methods=["GET", "POST"])
+def jzb():
+    return zkouska_brzdy("jzb", "JZB")
+
+
+@app.route("/uzb", methods=["GET", "POST"])
+def uzb():
+    return zkouska_brzdy("uzb", "ÚZB")
+
+
+def zkouska_brzdy(klic, nazev):
     doc = get_doc()
     if request.method == "POST":
-        doc[typ] = {
-            "vykonana": request.form.get("vykonana", "ne"),
+        doc[klic] = {
+            "vykonana": request.form.get("vykonana", "NE"),
             "kde": request.form.get("kde", "").strip(),
             "kdy": request.form.get("kdy", "").strip(),
             "kym": request.form.get("kym", "").strip(),
             "kym_jiny": request.form.get("kym_jiny", "").strip(),
         }
         save_doc(doc)
-        flash(f"{typ.upper()} byla uložena.", "ok")
         return redirect(url_for("zob"))
-    return render_template("zkouska.html", typ=typ, data=doc.get(typ, {}), moznosti=KDO_VYKONAL_MOZNOSTI)
+    return render_template("zkouska.html", typ=klic, nazev=nazev, data=doc.get(klic, {}), vykonal_moznosti=VYKONAL_MOZNOSTI)
 
 
 @app.route("/rekapitulace")
 def rekapitulace():
     doc = get_doc()
-    vypocet = vytvor_vypocet(doc)
-    rychlost, chybi, skutecna = vypocitej_rychlost_podle_brzd(doc)
-    return render_template("rekapitulace.html", doc=doc, vypocet=vypocet, rychlost=rychlost, chybi=chybi, skutecna=skutecna, nbu=vyhodnot_nbu(doc), blokovani=vyhodnot_system_blokovani(doc))
+    return render_template("rekapitulace.html", doc=doc, vypocet=vytvor_vypocet(doc), vozidla=doc.get("vozidla", []))
 
 
 @app.route("/tisk")
 def tisk():
     doc = get_doc()
-    vypocet = vytvor_vypocet(doc)
-    rychlost, chybi, skutecna = vypocitej_rychlost_podle_brzd(doc)
-    return render_template("tisk.html", doc=doc, vypocet=vypocet, rychlost=rychlost, chybi=chybi, skutecna=skutecna, nbu=vyhodnot_nbu(doc), blokovani=vyhodnot_system_blokovani(doc))
+    return render_template("tisk.html", doc=doc, vypocet=vytvor_vypocet(doc), vozidla=doc.get("vozidla", []))
 
 
 @app.route("/databaze")
@@ -300,5 +447,12 @@ def databaze():
     return render_template("databaze.html", databaze=DATABAZE, vlaky=DATABAZE_VLAKU, tahak=TAHAK_CISEL_VOZIDEL)
 
 
+@app.route("/konec")
+def konec():
+    reset_doc()
+    flash("Dokumentace byla ukončena.")
+    return redirect(url_for("index"))
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(environ.get("PORT", 5000)), debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

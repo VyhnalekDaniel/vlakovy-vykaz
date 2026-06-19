@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Vlaková dokumentace{% endblock %}
 {% block content %}
-<div class="card center">
-  <h1>Vlaková dokumentace</h1>
-  <p>Vyber, jestli chceš vlak načíst z databáze JŘ, nebo zadat libovolný vlak ručně.</p>
-  <div class="grid-buttons">
-    <a class="btn primary" href="{{ url_for('vlak_z_jr') }}">Vlak z JŘ</a>
-    <a class="btn" href="{{ url_for('libovolny_vlak') }}">Libovolný vlak</a>
-    <a class="btn ghost" href="{{ url_for('index') }}">Zpět do menu</a>
-  </div>
+<div class="card"><h1>Vlaková dokumentace</h1><p class="muted">Vyber způsob založení dokumentace.</p></div>
+<div class="grid two">
+  <a class="big-button" href="{{ url_for('vlak_z_jr') }}">Vlak z JŘ</a>
+  <a class="big-button" href="{{ url_for('libovolny_vlak') }}">Libovolný vlak</a>
 </div>
+<div class="nav"><a href="{{ url_for('index') }}">← Hlavní menu</a></div>
 {% endblock %}

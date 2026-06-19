@@ -4,30 +4,24 @@
 <div class="card">
   <h1>Zpráva o brzdění</h1>
   <form method="post">
-    <label>Potřebná brzdicí procenta<input name="potrebna_procenta" type="number" step="0.01" value="{{ doc.zob.potrebna_procenta }}"></label>
-    <label>Režim brzdy vlaku
-      <select name="rezim_brzdy_vlaku">
-        {% for r in rezimy %}<option value="{{ r }}" {% if doc.zob.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
-      </select>
-    </label>
-    <label>Doprovod<input name="doprovod" value="{{ doc.zob.doprovod }}"></label>
-    <label>Poznámky k ZOB<textarea name="poznamky">{{ doc.zob.poznamky }}</textarea></label>
+    <label>Potřebná brzdicí procenta</label><input name="potrebna_procenta" type="number" step="0.01" value="{{ doc.zob.potrebna_procenta }}">
+    <label>Brzdicí režim vlaku</label><select name="rezim_brzdy_vlaku">{% for r in rezimy %}<option {% if doc.zob.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
+    <label>Doprovod</label><input name="doprovod" value="{{ doc.zob.doprovod }}">
+    <label>Poznámky</label><textarea name="poznamky">{{ doc.zob.poznamky }}</textarea>
     <h2>Přednastavené poznámky</h2>
     {% if poznamky_moznosti %}
-      <div class="checks">
       {% for p in poznamky_moznosti %}
-        <label><input type="checkbox" name="poznamky_vyber" value="{{ p }}" {% if p in doc.zob.poznamky_vyber %}checked{% endif %}> {{ p }}</label>
+        <label class="check"><input type="checkbox" name="poznamky_zob" value="{{ p }}" {% if p in doc.zob.poznamky_vybrane %}checked{% endif %}> {{ p }}</label>
       {% endfor %}
-      </div>
     {% else %}
-      <p class="muted">Seznam poznámek je připravený v app.py jako POZNAMKY_ZOB_MOZNOSTI.</p>
+      <p class="muted">Seznam přednastavených poznámek je zatím prázdný. Doplníš ho v app.py do POZNAMKY_ZOB_MOZNOSTI.</p>
     {% endif %}
-    <div class="toolbar">
-      <button class="btn" name="action" value="ulozit" type="submit">Uložit ZOB</button>
-      <button class="btn" name="action" value="jzb" type="submit">Uložit a vyplnit JZB</button>
-      <button class="btn" name="action" value="uzb" type="submit">Uložit a vyplnit ÚZB</button>
-      <button class="btn primary" name="action" value="rekapitulace" type="submit">Rekapitulace</button>
+    <div class="button-row">
+      <button name="akce" value="ulozit">Uložit a rekapitulace</button>
+      <button name="akce" value="jzb">Uložit a vyplnit JZB</button>
+      <button name="akce" value="uzb">Uložit a vyplnit ÚZB</button>
     </div>
   </form>
 </div>
+<div class="nav"><a href="{{ url_for('vykaz_vozidel') }}">← Zpět do výkazu vozidel</a></div>
 {% endblock %}
