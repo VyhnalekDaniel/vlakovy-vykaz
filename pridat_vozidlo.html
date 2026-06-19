@@ -1,24 +1,34 @@
-{% extends "base.html" %}
-{% block content %}
-<section class="hero">
-  <h1>Hlavní stránka</h1>
-  <p>Zjednodušené hlavní menu. Všechny kroky výkazu jsou schované pod vlakovou dokumentací.</p>
-</section>
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or "Vlaková dokumentace" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar no-print">
+    <a class="brand" href="{{ url_for('menu') }}">Vlaková dokumentace</a>
+    <nav>
+      <a href="{{ url_for('menu') }}">Hlavní</a>
+      <a href="{{ url_for('vlakova_dokumentace') }}">Dokumentace</a>
+      <a href="{{ url_for('vykaz_vozidel') }}">Výkaz vozidel</a>
+      <a href="{{ url_for('zob') }}">ZOB</a>
+      <a href="{{ url_for('databaze') }}">Databáze</a>
+    </nav>
+  </header>
 
-<div class="menu-grid big-menu">
-  <a class="menu-card" href="{{ url_for('vlakova_dokumentace') }}"><span>📄</span>Vlaková dokumentace</a>
-  <a class="menu-card" href="{{ url_for('databaze') }}"><span>🗃️</span>Databáze</a>
-</div>
-
-{% if info.vlak or pocet %}
-<section class="panel">
-  <h2>Rozpracovaná dokumentace</h2>
-  <div class="grid two">
-    <div class="kv"><span>Vlak</span><strong>{{ info.vlak or 'nezadáno' }}</strong></div>
-    <div class="kv"><span>Trasa</span><strong>{{ info.vychozi_stanice or '?' }} → {{ info.konecna_stanice or '?' }}</strong></div>
-    <div class="kv"><span>Vozidel</span><strong>{{ pocet }}</strong></div>
-  </div>
-  <p class="actions"><a class="primary link-button" href="{{ url_for('vykaz_vozidel') }}">Pokračovat v dokumentaci</a></p>
-</section>
-{% endif %}
-{% endblock %}
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="messages no-print">
+          {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

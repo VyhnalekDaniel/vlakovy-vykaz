@@ -1,27 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>9 - Databáze</h1>
-{% for typ, cast in [("HDV", databaze.HDV), ("VOZY", databaze.VOZY)] %}
-<section class="panel table-wrap">
-  <h2>Databáze {{ typ }}</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Klíč</th><th>Název</th>
-        {% for rezim in rezimy %}<th>{{ rezim }}</th>{% endfor %}
-        <th>NBU</th><th>Systémy</th><th>Max rychlost</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for klic,d in cast.items() %}
-      <tr>
-        <td>{{ klic }}</td><td>{{ d.nazev }}</td>
-        {% for rezim in rezimy %}<td>{{ d[rezim] }}</td>{% endfor %}
-        <td>{{ d.NBU }}</td><td>{{ d.system_blokovani|join(', ') }}</td><td>{{ d.max_rychlost }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</section>
-{% endfor %}
+<h1>4 - Odstranit vozidlo podle pozice</h1>
+{% if not vozidla %}
+  <div class="panel">Seznam vozidel je prázdný.</div>
+{% else %}
+  <div class="panel">
+    <ol>{% for v in vozidla %}<li>{{ v.zadane_cislo }}</li>{% endfor %}</ol>
+    <form method="post" class="form inline-form">
+      <label>Pozice vozidla<input type="number" name="pozice" min="1" max="{{ vozidla|length }}" required></label>
+      <button class="danger-button">Odstranit</button>
+    </form>
+  </div>
+{% endif %}
 {% endblock %}

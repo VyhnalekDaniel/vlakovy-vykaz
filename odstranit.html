@@ -1,73 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>3 - Výkaz vozidel a výpočet vlaku</h1>
+<h1>Přidat vozidlo</h1>
+<section class="panel compact"><p><strong>{{ info.vlak or "Vlak nezadán" }}</strong> — {{ info.vychozi_stanice or "?" }} → {{ info.konecna_stanice or "?" }}</p></section>
+<form method="post" class="panel form">
+  <label>Celé číslo vozu nebo lokomotivy<input name="cislo" placeholder="např. 95545811111-4" required></label>
+  <label>Typ
+    <select name="typ">
+      <option value="HDV">HDV</option>
+      <option value="VOZ">VOZ</option>
+    </select>
+  </label>
+  <label>Režim brzdění
+    <select name="rezim_brzdeni">
+      {% for r in rezimy %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Stav HDV
+    <select name="stav">
+      {% for s in stavy %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+    </select>
+    <small>U běžného vozu se tato položka ignoruje.</small>
+  </label>
+  <button class="primary">Přidat vozidlo</button>
+</form>
 
-<section class="panel">
-  <h2>Záhlaví</h2>
-  <div class="grid two">
-    <div class="kv"><span>Číslo vlaku</span><strong>{{ data.info.vlak }}</strong></div>
-    <div class="kv"><span>Datum odjezdu</span><strong>{{ data.info.datum_odjezdu }}</strong></div>
-    <div class="kv"><span>Výchozí stanice</span><strong>{{ data.info.vychozi_stanice }}</strong></div>
-    <div class="kv"><span>Konečná stanice</span><strong>{{ data.info.konecna_stanice }}</strong></div>
-    <div class="kv wide"><span>Poznámky</span><strong>{{ data.info.poznamky }}</strong></div>
-  </div>
-</section>
-
-<section class="panel">
-  <h2>Seznam vozidel</h2>
-  <ol>
-    {% for v in data.vozidla %}<li>{{ v.zadane_cislo }} — {{ v.nazev }} / {{ v.rezim_brzdeni }} / brzdicí váha {{ v.brzdici_vaha }}</li>{% endfor %}
-  </ol>
-</section>
-
-<section class="panel table-wrap">
-  <h2>Souhrn</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Skupina</th><th>Počet</th><th>Hmotnost</th><th>Délka</th><th>Nápravy</th><th>Brzd. váha</th><th>Kotouč.</th><th>Špalíky</th>
-        {% for rezim in rezimy %}<th>{{ rezim }}</th>{% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-    {% for key,label in [("cinna_hdv","Činná HDV"),("dopravovana_hdv","Dopravovaná HDV"),("vozy","Vozy celkem"),("souprava","Souprava celkem"),("vlak","Vlak celkem")] %}
-      {% set r = data.vypocet[key] %}
-      <tr>
-        <td>{{ label }}</td><td>{{ r.pocet }}</td><td>{{ '%.1f'|format(r.hmotnost) }}</td><td>{{ '%.2f'|format(r.delka) }}</td><td>{{ r.pocet_naprav }}</td><td>{{ r.brzdici_vaha }}</td><td>{{ r.kotoucove_brzdy }}</td><td>{{ r.nekovove_spaliky }}</td>
-        {% for rezim in rezimy %}<td>{{ r[rezim] }}</td>{% endfor %}
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</section>
-
-<section class="panel">
-  <h2>Výpočet vlaku</h2>
-  <div class="grid two">
-    <div class="kv"><span>Celková délka vlaku</span><strong>{{ '%.2f'|format(data.vypocet.vlak.delka) }} m</strong></div>
-    <div class="kv"><span>Počet náprav</span><strong>{{ data.vypocet.vlak.pocet_naprav }}</strong></div>
-    <div class="kv"><span>Hmotnost</span><strong>{{ data.vypocet.vlak.hmotnost }} t</strong></div>
-    <div class="kv"><span>Celková brzdicí váha</span><strong>{{ data.vypocet.vlak.brzdici_vaha }}</strong></div>
-    <div class="kv"><span>Skutečná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.skutecna_procenta) }} %</strong></div>
-    <div class="kv"><span>Potřebná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.potrebna_procenta) }} %</strong></div>
-    <div class="kv"><span>Chybějící brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.chybejici_procenta) }} %</strong></div>
-    <div class="kv"><span>Max. rychlost podle vozidel</span><strong>{{ data.vypocet.max_rychlost }} km/h</strong></div>
-    <div class="kv"><span>Rychlost podle brzd</span><strong>{{ data.rychlost_podle_brzd }} km/h</strong></div>
-  </div>
-</section>
-
-<section class="panel">
-  <h2>Poznámky k vlaku</h2>
-  <p>{{ data.nbu }}</p>
-  <p>Systém blokování vlaku: <strong>{{ data.system_blokovani }}</strong></p>
-</section>
-
-<section class="panel">
-  <h2>Zkouška brzdy</h2>
-  <p>Zkouška brzdy: <strong>{{ data.info.zkouska_brzdy }}</strong></p>
-  <p>Místo zkoušky: <strong>{{ data.info.misto_zkousky }}</strong></p>
-  <p>Režim brzdy vlaku: <strong>{{ data.info.rezim_brzdy_vlaku }}</strong></p>
-  <p>Číslo vedoucího HDV: <strong>{{ data.info.vedouci_hdv }}</strong></p>
-  <p>Podpis strojvedoucího: <strong>{{ data.info.podpis_strojvedouciho }}</strong></p>
-</section>
+<div class="panel help">
+  <h2>Příklad zadání</h2>
+  <p><code>95545811111-4</code> jako HDV, režim P, stav činné.</p>
+  <p><code>51542191000-0</code> jako VOZ, režim R.</p>
+</div>
 {% endblock %}

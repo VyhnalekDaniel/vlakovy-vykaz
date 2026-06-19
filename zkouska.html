@@ -1,15 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>4 - Odstranit vozidlo podle pozice</h1>
+<h1>{% if podrobne %}8 - Zadaná vozidla podrobně{% else %}7 - Zadaná vozidla{% endif %}</h1>
 {% if not vozidla %}
-  <div class="panel">Seznam vozidel je prázdný.</div>
+  <div class="panel">Zatím nejsou zadána žádná vozidla.</div>
 {% else %}
-  <div class="panel">
-    <ol>{% for v in vozidla %}<li>{{ v.zadane_cislo }}</li>{% endfor %}</ol>
-    <form method="post" class="form inline-form">
-      <label>Pozice vozidla<input type="number" name="pozice" min="1" max="{{ vozidla|length }}" required></label>
-      <button class="danger-button">Odstranit</button>
-    </form>
-  </div>
+  <section class="panel table-wrap">
+    <table>
+      <thead><tr><th>Pozice</th><th>Číslo</th>{% if podrobne %}<th>Klíč</th><th>Název</th><th>Typ</th><th>Stav</th><th>Režim</th><th>Brzd. váha</th><th>Hmotnost</th><th>Délka</th><th>NBU</th><th>Systémy</th><th>Nejvyšší</th>{% endif %}</tr></thead>
+      <tbody>
+        {% for v in vozidla %}
+          <tr>
+            <td>{{ loop.index }}</td><td>{{ v.zadane_cislo }}</td>
+            {% if podrobne %}
+              <td>{{ v.klic }}</td><td>{{ v.nazev }}</td><td>{{ v.typ }}</td><td>{{ v.stav }}</td><td>{{ v.rezim_brzdeni }}</td><td>{{ v.brzdici_vaha }}</td><td>{{ v.hmotnost }} t</td><td>{{ v.delka }} m</td><td>{{ v.NBU }}</td><td>{{ v.system_blokovani|join(', ') }}</td><td>{{ nejvyssi_system_vozidla(v) }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
 {% endif %}
 {% endblock %}

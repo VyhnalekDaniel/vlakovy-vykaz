@@ -1,31 +1,61 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ typ }}</h1>
+<h1>Zpráva o brzdění</h1>
+<section class="panel">
+  <p><strong>{{ info.vlak or 'Vlak nezadán' }}</strong> — {{ info.vychozi_stanice or '?' }} → {{ info.konecna_stanice or '?' }}</p>
+</section>
+
 <form method="post" class="panel form">
-  <label>Byla {{ typ }} vykonána?
-    <select name="vykonana">
-      <option value="NE" {% if info[prefix + '_vykonana'] != 'ANO' %}selected{% endif %}>NE</option>
-      <option value="ANO" {% if info[prefix + '_vykonana'] == 'ANO' %}selected{% endif %}>ANO</option>
+  <label>Potřebná brzdicí procenta<input name="potrebna_procenta" type="number" step="0.01" value="{{ info.potrebna_procenta }}"></label>
+  <label>Brzdicí režim vlaku
+    <select name="rezim_brzdy_vlaku">
+      {% for r in rezimy %}<option value="{{ r }}" {% if info.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
     </select>
   </label>
-  <label>Kde byla vykonána<input name="kde" value="{{ info[prefix + '_kde'] or info.vychozi_stanice }}"></label>
-  <label>Kdy byla vykonána<input type="datetime-local" name="kdy" value="{{ info[prefix + '_kdy'] }}"></label>
-  <label>Kým byla vykonána
-    {% set ulozeny = info[prefix + '_kym'] %}
-    {% set je_jiny = ulozeny and ulozeny not in vykonal_moznosti %}
-    <select name="kym">
-      <option value="" {% if not ulozeny %}selected{% endif %}>-- vyber --</option>
-      {% for moznost in vykonal_moznosti %}
-        <option value="{{ moznost }}" {% if ulozeny == moznost or (moznost == 'Jiný ŽDP' and je_jiny) %}selected{% endif %}>{{ moznost }}</option>
-      {% endfor %}
-    </select>
-  </label>
-  <label>Upřesnění pro Jiný ŽDP
-    <input name="kym_jiny" value="{% if info[prefix + '_kym'].startswith('Jiný ŽDP - ') %}{{ info[prefix + '_kym'][11:] }}{% elif je_jiny %}{{ info[prefix + '_kym'] }}{% endif %}" placeholder="Vyplň jen při volbě Jiný ŽDP">
-  </label>
+  <label>Doprovod<input name="doprovod" value="{{ info.doprovod }}" placeholder="např. 1"></label>
+  <div class="form-block">
+    <label>Přednastavené poznámky ke zprávě o brzdění</label>
+    {% if poznamky_moznosti %}
+      <div class="checkbox-list">
+        {% for p in poznamky_moznosti %}
+        <label class="check-row">
+          <input type="checkbox" name="poznamky_zob_vyber" value="{{ p }}" {% if p in info.poznamky_zob_vyber %}checked{% endif %}>
+          <span>{{ p }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Seznam přednastavených poznámek je zatím prázdný. Doplníš ho později v kódu do <code>POZNAMKY_ZOB_MOZNOSTI</code>.</p>
+    {% endif %}
+  </div>
+
+  <label>Vlastní poznámka k ZOB<textarea name="poznamky_zob">{{ info.poznamky_zob }}</textarea></label>
+
   <div class="button-row">
-    <button class="primary">Uložit {{ typ }}</button>
-    <a class="btn secondary" href="{{ url_for('zob') }}">Zpět na ZOB</a>
+    <button class="secondary" name="akce" value="jzb" type="submit">Uložit a vyplnit JZB</button>
+    <button class="secondary" name="akce" value="uzb" type="submit">Uložit a vyplnit ÚZB</button>
+    <button class="primary" name="akce" value="rekap" type="submit">Uložit ZOB a zobrazit rekapitulaci</button>
   </div>
 </form>
+
+<section class="panel">
+  <h2>Stav JZB / ÚZB</h2>
+  <div class="grid two">
+    <div class="kv"><span>JZB</span><strong>{{ info.jzb_vykonana }}</strong></div>
+    <div class="kv"><span>ÚZB</span><strong>{{ info.uzb_vykonana }}</strong></div>
+  </div>
+  <p class="muted">Při kliknutí na JZB nebo ÚZB se údaje ze ZOB nejdřív uloží, takže se neztratí potřebná procenta, doprovod ani poznámky.</p>
+</section>
+
+{% if data %}
+<section class="panel">
+  <h2>Průběžný výpočet</h2>
+  <div class="grid two">
+    <div class="kv"><span>Skutečná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.skutecna_procenta) }} %</strong></div>
+    <div class="kv"><span>Chybějící brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.chybejici_procenta) }} %</strong></div>
+    <div class="kv"><span>Max. rychlost podle vozidel</span><strong>{{ data.vypocet.max_rychlost }} km/h</strong></div>
+    <div class="kv"><span>Rychlost podle brzd</span><strong>{{ data.rychlost_podle_brzd }} km/h</strong></div>
+  </div>
+</section>
+{% endif %}
 {% endblock %}

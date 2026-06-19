@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="hero">
-  <h1>Vlaková dokumentace</h1>
-  <p>Nejdřív vyber vlak. Potom bude následovat výkaz vozidel, zpráva o brzdění a rekapitulace.</p>
-</section>
-
-<div class="menu-grid">
-  <a class="menu-card" href="{{ url_for('vlak_z_jr') }}"><span>🚂</span>Vlak z JŘ</a>
-  <a class="menu-card" href="{{ url_for('libovolny_vlak') }}"><span>✍️</span>Libovolný vlak</a>
-</div>
-
-<section class="panel help">
-  <h2>Ukládání dokumentací</h2>
-  <p>Trvalé ukládání a zpětné načítání dokumentací necháme až na databázovou část. Teď se data drží v aktuální relaci prohlížeče.</p>
-</section>
+<h1>11 - Automaticky vytvořit JZB / ÚZB</h1>
+<form method="post" class="panel form">
+  <label>Zkouška brzdy
+    <select name="zkouska_brzdy">
+      <option value="JZB">JZB</option>
+      <option value="ÚZB">ÚZB</option>
+    </select>
+  </label>
+  <label>Místo zkoušky<input name="misto_zkousky" value="{{ info.misto_zkousky or info.vychozi_stanice }}"></label>
+  <label>Režim brzdy vlaku
+    <select name="rezim_brzdy_vlaku">
+      {% for r in rezimy %}<option value="{{ r }}" {% if info.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="primary">Vytvořit zkoušku brzdy</button>
+</form>
 {% endblock %}

@@ -1,32 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Přidat vozidlo</h1>
-<section class="panel compact"><p><strong>{{ info.vlak or "Vlak nezadán" }}</strong> — {{ info.vychozi_stanice or "?" }} → {{ info.konecna_stanice or "?" }}</p></section>
+<h1>1 - Vložit data o vlaku</h1>
 <form method="post" class="panel form">
-  <label>Celé číslo vozu nebo lokomotivy<input name="cislo" placeholder="např. 95545811111-4" required></label>
-  <label>Typ
-    <select name="typ">
-      <option value="HDV">HDV</option>
-      <option value="VOZ">VOZ</option>
-    </select>
-  </label>
-  <label>Režim brzdění
-    <select name="rezim_brzdeni">
-      {% for r in rezimy %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
-    </select>
-  </label>
-  <label>Stav HDV
-    <select name="stav">
-      {% for s in stavy %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
-    </select>
-    <small>U běžného vozu se tato položka ignoruje.</small>
-  </label>
-  <button class="primary">Přidat vozidlo</button>
+  <label>Číslo vlaku<input name="vlak" value="{{ info.vlak }}"></label>
+  <label>Datum odjezdu<input type="date" name="datum_odjezdu" value="{{ info.datum_odjezdu }}"></label>
+  <label>Výchozí stanice<input name="vychozi_stanice" value="{{ info.vychozi_stanice }}"></label>
+  <label>Konečná stanice<input name="konecna_stanice" value="{{ info.konecna_stanice }}"></label>
+  <label>Potřebná brzdicí procenta<input name="potrebna_procenta" type="number" step="0.01" value="{{ info.potrebna_procenta }}"></label>
+  <label>Poznámky<textarea name="poznamky">{{ info.poznamky }}</textarea></label>
+  <label>Podpis strojvedoucího<input name="podpis_strojvedouciho" value="{{ info.podpis_strojvedouciho }}"></label>
+  <button class="primary">Uložit data vlaku</button>
 </form>
-
-<div class="panel help">
-  <h2>Příklad zadání</h2>
-  <p><code>95545811111-4</code> jako HDV, režim P, stav činné.</p>
-  <p><code>51542191000-0</code> jako VOZ, režim R.</p>
-</div>
 {% endblock %}
