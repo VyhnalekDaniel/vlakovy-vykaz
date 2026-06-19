@@ -1,15 +1,26 @@
-{% extends "base.html" %}
-{% block content %}
-<h1>4 - Odstranit vozidlo podle pozice</h1>
-{% if not vozidla %}
-  <div class="panel">Seznam vozidel je prázdný.</div>
-{% else %}
-  <div class="panel">
-    <ol>{% for v in vozidla %}<li>{{ v.zadane_cislo }}</li>{% endfor %}</ol>
-    <form method="post" class="form inline-form">
-      <label>Pozice vozidla<input type="number" name="pozice" min="1" max="{{ vozidla|length }}" required></label>
-      <button class="danger-button">Odstranit</button>
-    </form>
-  </div>
-{% endif %}
-{% endblock %}
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Vlakový výkaz{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a href="{{ url_for('index') }}" class="brand">Vlaková dokumentace</a>
+</header>
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="messages">
+        {% for category, message in messages %}
+          <div class="msg {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,19 +1,13 @@
 {% extends "base.html" %}
+{% block title %}Vlaková dokumentace{% endblock %}
 {% block content %}
-<h1>11 - Automaticky vytvořit JZB / ÚZB</h1>
-<form method="post" class="panel form">
-  <label>Zkouška brzdy
-    <select name="zkouska_brzdy">
-      <option value="JZB">JZB</option>
-      <option value="ÚZB">ÚZB</option>
-    </select>
-  </label>
-  <label>Místo zkoušky<input name="misto_zkousky" value="{{ info.misto_zkousky or info.vychozi_stanice }}"></label>
-  <label>Režim brzdy vlaku
-    <select name="rezim_brzdy_vlaku">
-      {% for r in rezimy %}<option value="{{ r }}" {% if info.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
-    </select>
-  </label>
-  <button class="primary">Vytvořit zkoušku brzdy</button>
-</form>
+<div class="card center">
+  <h1>Vlaková dokumentace</h1>
+  <p>Vyber, jestli chceš vlak načíst z databáze JŘ, nebo zadat libovolný vlak ručně.</p>
+  <div class="grid-buttons">
+    <a class="btn primary" href="{{ url_for('vlak_z_jr') }}">Vlak z JŘ</a>
+    <a class="btn" href="{{ url_for('libovolny_vlak') }}">Libovolný vlak</a>
+    <a class="btn ghost" href="{{ url_for('index') }}">Zpět do menu</a>
+  </div>
+</div>
 {% endblock %}

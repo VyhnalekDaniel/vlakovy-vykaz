@@ -1,67 +1,33 @@
 {% extends "base.html" %}
+{% block title %}ZOB{% endblock %}
 {% block content %}
-<section class="hero compact">
-  <h1>Výkaz vozidel</h1>
-  <p><strong>{{ info.vlak or 'Vlak nezadán' }}</strong> — {{ info.vychozi_stanice or '?' }} → {{ info.konecna_stanice or '?' }}</p>
-</section>
-
-<section class="panel actions-panel">
-  <div class="menu-grid small-grid">
-    <a class="menu-card" href="{{ url_for('pridat_vozidlo') }}"><span>+</span>Přidat vozidlo</a>
-    <form method="post" action="{{ url_for('otoc_vlak') }}" class="menu-form"><button class="menu-card"><span>6</span>Otočit vlak</button></form>
-    <form method="post" action="{{ url_for('otoc_jednotku') }}" class="menu-form"><button class="menu-card"><span>5</span>Otočit jednotku</button></form>
-    <a class="menu-card" href="{{ url_for('zob') }}"><span>ZOB</span>Vytvořit zprávu o brzdění</a>
-  </div>
-</section>
-
-<section class="panel">
-  <h2>Seznam vozidel</h2>
-  {% if not vozidla %}
-    <p>Zatím nejsou zadána žádná vozidla.</p>
-  {% else %}
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Pořadí</th><th>Číslo</th><th>Název</th><th>Typ</th><th>Stav</th><th>Režim</th><th>Brzd. váha</th><th>Pozice</th><th></th></tr></thead>
-        <tbody>
-          {% for v in vozidla %}
-          <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ v.zadane_cislo }}</td>
-            <td>{{ v.nazev }}</td>
-            <td>{{ v.typ }}</td>
-            <td>{{ v.stav }}</td>
-            <td>{{ v.rezim_brzdeni }}</td>
-            <td>{{ v.brzdici_vaha }}</td>
-            <td class="position-tools">
-              <form method="post" action="{{ url_for('posun_vozidlo', pozice=loop.index, smer='nahoru') }}">
-                <button title="Posunout nahoru" {% if loop.first %}disabled{% endif %}>↑</button>
-              </form>
-              <form method="post" action="{{ url_for('posun_vozidlo', pozice=loop.index, smer='dolu') }}">
-                <button title="Posunout dolů" {% if loop.last %}disabled{% endif %}>↓</button>
-              </form>
-              <form method="post" action="{{ url_for('presun_vozidlo', pozice=loop.index) }}" class="inline-position-form">
-                <input type="number" name="nova_pozice" min="1" max="{{ vozidla|length }}" value="{{ loop.index }}" aria-label="Nová pozice">
-                <button>Přesunout</button>
-              </form>
-            </td>
-            <td><a href="{{ url_for('odstranit') }}">Smazat</a></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<div class="card">
+  <h1>Zpráva o brzdění</h1>
+  <form method="post">
+    <label>Potřebná brzdicí procenta<input name="potrebna_procenta" type="number" step="0.01" value="{{ doc.zob.potrebna_procenta }}"></label>
+    <label>Režim brzdy vlaku
+      <select name="rezim_brzdy_vlaku">
+        {% for r in rezimy %}<option value="{{ r }}" {% if doc.zob.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Doprovod<input name="doprovod" value="{{ doc.zob.doprovod }}"></label>
+    <label>Poznámky k ZOB<textarea name="poznamky">{{ doc.zob.poznamky }}</textarea></label>
+    <h2>Přednastavené poznámky</h2>
+    {% if poznamky_moznosti %}
+      <div class="checks">
+      {% for p in poznamky_moznosti %}
+        <label><input type="checkbox" name="poznamky_vyber" value="{{ p }}" {% if p in doc.zob.poznamky_vyber %}checked{% endif %}> {{ p }}</label>
+      {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Seznam poznámek je připravený v app.py jako POZNAMKY_ZOB_MOZNOSTI.</p>
+    {% endif %}
+    <div class="toolbar">
+      <button class="btn" name="action" value="ulozit" type="submit">Uložit ZOB</button>
+      <button class="btn" name="action" value="jzb" type="submit">Uložit a vyplnit JZB</button>
+      <button class="btn" name="action" value="uzb" type="submit">Uložit a vyplnit ÚZB</button>
+      <button class="btn primary" name="action" value="rekapitulace" type="submit">Rekapitulace</button>
     </div>
-  {% endif %}
-</section>
-
-{% if data %}
-<section class="panel">
-  <h2>Rychlý souhrn</h2>
-  <div class="grid two">
-    <div class="kv"><span>Hmotnost vlaku</span><strong>{{ data.vypocet.vlak.hmotnost }} t</strong></div>
-    <div class="kv"><span>Délka</span><strong>{{ '%.2f'|format(data.vypocet.vlak.delka) }} m</strong></div>
-    <div class="kv"><span>Brzdicí váha</span><strong>{{ data.vypocet.vlak.brzdici_vaha }}</strong></div>
-    <div class="kv"><span>Skutečná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.skutecna_procenta) }} %</strong></div>
-  </div>
-</section>
-{% endif %}
+  </form>
+</div>
 {% endblock %}

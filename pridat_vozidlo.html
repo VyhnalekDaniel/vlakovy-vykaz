@@ -1,34 +1,13 @@
-<!doctype html>
-<html lang="cs">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ title or "Vlaková dokumentace" }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <header class="topbar no-print">
-    <a class="brand" href="{{ url_for('menu') }}">Vlaková dokumentace</a>
-    <nav>
-      <a href="{{ url_for('menu') }}">Hlavní</a>
-      <a href="{{ url_for('vlakova_dokumentace') }}">Dokumentace</a>
-      <a href="{{ url_for('vykaz_vozidel') }}">Výkaz vozidel</a>
-      <a href="{{ url_for('zob') }}">ZOB</a>
-      <a href="{{ url_for('databaze') }}">Databáze</a>
-    </nav>
-  </header>
-
-  <main class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="messages no-print">
-          {% for category, message in messages %}
-            <div class="message {{ category }}">{{ message }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-  </main>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Změna vlaku{% endblock %}
+{% block content %}
+<div class="card center">
+  <h1>Změna čísla vlaku</h1>
+  <p>Měníš vlak z <strong>{{ doc.vlak.cislo }}</strong> na <strong>{{ pending.cislo }}</strong>.</p>
+  <p>Chceš ponechat vozidla ve výkazu?</p>
+  <form method="post" class="grid-buttons">
+    <button class="btn primary" name="vozidla" value="ponechat">Ano, ponechat vozidla</button>
+    <button class="btn danger" name="vozidla" value="smazat">Ne, vymazat výkaz vozidel</button>
+  </form>
+</div>
+{% endblock %}

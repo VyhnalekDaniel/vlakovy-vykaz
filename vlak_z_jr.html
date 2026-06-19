@@ -1,27 +1,12 @@
 {% extends "base.html" %}
+{% block title %}Hlavní menu{% endblock %}
 {% block content %}
-<h1>9 - Databáze</h1>
-{% for typ, cast in [("HDV", databaze.HDV), ("VOZY", databaze.VOZY)] %}
-<section class="panel table-wrap">
-  <h2>Databáze {{ typ }}</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Klíč</th><th>Název</th>
-        {% for rezim in rezimy %}<th>{{ rezim }}</th>{% endfor %}
-        <th>NBU</th><th>Systémy</th><th>Max rychlost</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for klic,d in cast.items() %}
-      <tr>
-        <td>{{ klic }}</td><td>{{ d.nazev }}</td>
-        {% for rezim in rezimy %}<td>{{ d[rezim] }}</td>{% endfor %}
-        <td>{{ d.NBU }}</td><td>{{ d.system_blokovani|join(', ') }}</td><td>{{ d.max_rychlost }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<section class="card center">
+  <h1>Hlavní menu</h1>
+  <div class="grid-buttons">
+    <a class="btn primary" href="{{ url_for('vlakova_dokumentace') }}">Vlaková dokumentace</a>
+    <a class="btn" href="{{ url_for('databaze') }}">Databáze</a>
+    <a class="btn danger" href="{{ url_for('nova_dokumentace') }}">Nová dokumentace</a>
+  </div>
 </section>
-{% endfor %}
 {% endblock %}

@@ -1,17 +1,18 @@
 {% extends "base.html" %}
+{% block title %}Libovolný vlak{% endblock %}
 {% block content %}
-<section class="hero">
-  <h1>Vlaková dokumentace</h1>
-  <p>Nejdřív vyber vlak. Potom bude následovat výkaz vozidel, zpráva o brzdění a rekapitulace.</p>
-</section>
-
-<div class="menu-grid">
-  <a class="menu-card" href="{{ url_for('vlak_z_jr') }}"><span>🚂</span>Vlak z JŘ</a>
-  <a class="menu-card" href="{{ url_for('libovolny_vlak') }}"><span>✍️</span>Libovolný vlak</a>
+<div class="card">
+  <h1>Libovolný vlak</h1>
+  <form method="post">
+    <label>Číslo vlaku<input name="cislo" value="{{ vlak.cislo or '' }}" required></label>
+    <label>Druh vlaku<input name="druh" value="{{ vlak.druh or '' }}"></label>
+    <label>Datum<input name="datum" type="date" value="{{ vlak.datum or '' }}"></label>
+    <label>Výchozí stanice<input name="vychozi_stanice" value="{{ vlak.vychozi_stanice or '' }}"></label>
+    <label>Konečná stanice<input name="konecna_stanice" value="{{ vlak.konecna_stanice or '' }}"></label>
+    <label>Sepsáno v<input name="sepsano_v" value="{{ vlak.sepsano_v or '' }}"></label>
+    <label>Sepsal<input name="sepsal" value="{{ vlak.sepsal or '' }}"></label>
+    <label>Poznámky<textarea name="poznamky">{{ vlak.poznamky or '' }}</textarea></label>
+    <button class="btn primary" type="submit">Pokračovat do výkazu vozidel</button>
+  </form>
 </div>
-
-<section class="panel help">
-  <h2>Ukládání dokumentací</h2>
-  <p>Trvalé ukládání a zpětné načítání dokumentací necháme až na databázovou část. Teď se data drží v aktuální relaci prohlížeče.</p>
-</section>
 {% endblock %}
