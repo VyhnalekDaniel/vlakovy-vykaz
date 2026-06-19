@@ -1,1 +1,4 @@
-web: gunicorn app:app
+__pycache__/
+*.pyc
+.env
+.DS_Store

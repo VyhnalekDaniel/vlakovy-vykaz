@@ -13,16 +13,38 @@
     </select>
   </label>
   <label>Doprovod<input name="doprovod" value="{{ info.doprovod }}" placeholder="např. 1"></label>
-  <label>Poznámky k ZOB<textarea name="poznamky_zob">{{ info.poznamky_zob }}</textarea></label>
-  <button class="primary">Uložit ZOB a zobrazit rekapitulaci</button>
+  <div class="form-block">
+    <label>Přednastavené poznámky ke zprávě o brzdění</label>
+    {% if poznamky_moznosti %}
+      <div class="checkbox-list">
+        {% for p in poznamky_moznosti %}
+        <label class="check-row">
+          <input type="checkbox" name="poznamky_zob_vyber" value="{{ p }}" {% if p in info.poznamky_zob_vyber %}checked{% endif %}>
+          <span>{{ p }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Seznam přednastavených poznámek je zatím prázdný. Doplníš ho později v kódu do <code>POZNAMKY_ZOB_MOZNOSTI</code>.</p>
+    {% endif %}
+  </div>
+
+  <label>Vlastní poznámka k ZOB<textarea name="poznamky_zob">{{ info.poznamky_zob }}</textarea></label>
+
+  <div class="button-row">
+    <button class="secondary" name="akce" value="jzb" type="submit">Uložit a vyplnit JZB</button>
+    <button class="secondary" name="akce" value="uzb" type="submit">Uložit a vyplnit ÚZB</button>
+    <button class="primary" name="akce" value="rekap" type="submit">Uložit ZOB a zobrazit rekapitulaci</button>
+  </div>
 </form>
 
 <section class="panel">
-  <h2>JZB / ÚZB</h2>
-  <div class="menu-grid small-grid">
-    <a class="menu-card" href="{{ url_for('detail_zkousky', typ='JZB') }}"><span>JZB</span>JZB: {{ info.jzb_vykonana }}</a>
-    <a class="menu-card" href="{{ url_for('detail_zkousky', typ='UZB') }}"><span>ÚZB</span>ÚZB: {{ info.uzb_vykonana }}</a>
+  <h2>Stav JZB / ÚZB</h2>
+  <div class="grid two">
+    <div class="kv"><span>JZB</span><strong>{{ info.jzb_vykonana }}</strong></div>
+    <div class="kv"><span>ÚZB</span><strong>{{ info.uzb_vykonana }}</strong></div>
   </div>
+  <p class="muted">Při kliknutí na JZB nebo ÚZB se údaje ze ZOB nejdřív uloží, takže se neztratí potřebná procenta, doprovod ani poznámky.</p>
 </section>
 
 {% if data %}

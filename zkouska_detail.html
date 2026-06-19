@@ -21,11 +21,29 @@
   {% else %}
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Pořadí</th><th>Číslo</th><th>Název</th><th>Typ</th><th>Stav</th><th>Režim</th><th>Brzd. váha</th><th></th></tr></thead>
+        <thead><tr><th>Pořadí</th><th>Číslo</th><th>Název</th><th>Typ</th><th>Stav</th><th>Režim</th><th>Brzd. váha</th><th>Pozice</th><th></th></tr></thead>
         <tbody>
           {% for v in vozidla %}
           <tr>
-            <td>{{ loop.index }}</td><td>{{ v.zadane_cislo }}</td><td>{{ v.nazev }}</td><td>{{ v.typ }}</td><td>{{ v.stav }}</td><td>{{ v.rezim_brzdeni }}</td><td>{{ v.brzdici_vaha }}</td>
+            <td>{{ loop.index }}</td>
+            <td>{{ v.zadane_cislo }}</td>
+            <td>{{ v.nazev }}</td>
+            <td>{{ v.typ }}</td>
+            <td>{{ v.stav }}</td>
+            <td>{{ v.rezim_brzdeni }}</td>
+            <td>{{ v.brzdici_vaha }}</td>
+            <td class="position-tools">
+              <form method="post" action="{{ url_for('posun_vozidlo', pozice=loop.index, smer='nahoru') }}">
+                <button title="Posunout nahoru" {% if loop.first %}disabled{% endif %}>↑</button>
+              </form>
+              <form method="post" action="{{ url_for('posun_vozidlo', pozice=loop.index, smer='dolu') }}">
+                <button title="Posunout dolů" {% if loop.last %}disabled{% endif %}>↓</button>
+              </form>
+              <form method="post" action="{{ url_for('presun_vozidlo', pozice=loop.index) }}" class="inline-position-form">
+                <input type="number" name="nova_pozice" min="1" max="{{ vozidla|length }}" value="{{ loop.index }}" aria-label="Nová pozice">
+                <button>Přesunout</button>
+              </form>
+            </td>
             <td><a href="{{ url_for('odstranit') }}">Smazat</a></td>
           </tr>
           {% endfor %}

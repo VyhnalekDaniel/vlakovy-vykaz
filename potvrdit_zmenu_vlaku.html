@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ typ }}</h1>
+<form method="post" class="panel form">
+  <label>Byla {{ typ }} vykonána?
+    <select name="vykonana">
+      <option value="NE" {% if info[prefix + '_vykonana'] != 'ANO' %}selected{% endif %}>NE</option>
+      <option value="ANO" {% if info[prefix + '_vykonana'] == 'ANO' %}selected{% endif %}>ANO</option>
+    </select>
+  </label>
+  <label>Kde byla vykonána<input name="kde" value="{{ info[prefix + '_kde'] or info.vychozi_stanice }}"></label>
+  <label>Kdy byla vykonána<input type="datetime-local" name="kdy" value="{{ info[prefix + '_kdy'] }}"></label>
+  <label>Kým byla vykonána
+    {% set ulozeny = info[prefix + '_kym'] %}
+    {% set je_jiny = ulozeny and ulozeny not in vykonal_moznosti %}
+    <select name="kym">
+      <option value="" {% if not ulozeny %}selected{% endif %}>-- vyber --</option>
+      {% for moznost in vykonal_moznosti %}
+        <option value="{{ moznost }}" {% if ulozeny == moznost or (moznost == 'Jiný ŽDP' and je_jiny) %}selected{% endif %}>{{ moznost }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Upřesnění pro Jiný ŽDP
+    <input name="kym_jiny" value="{% if info[prefix + '_kym'].startswith('Jiný ŽDP - ') %}{{ info[prefix + '_kym'][11:] }}{% elif je_jiny %}{{ info[prefix + '_kym'] }}{% endif %}" placeholder="Vyplň jen při volbě Jiný ŽDP">
+  </label>
+  <div class="button-row">
+    <button class="primary">Uložit {{ typ }}</button>
+    <a class="btn secondary" href="{{ url_for('zob') }}">Zpět na ZOB</a>
+  </div>
+</form>
+{% endblock %}
