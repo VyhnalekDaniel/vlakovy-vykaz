@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>4 - Odstranit vozidlo podle pozice</h1>
+{% if not vozidla %}
+  <div class="panel">Seznam vozidel je prázdný.</div>
+{% else %}
+  <div class="panel">
+    <ol>{% for v in vozidla %}<li>{{ v.zadane_cislo }}</li>{% endfor %}</ol>
+    <form method="post" class="form inline-form">
+      <label>Pozice vozidla<input type="number" name="pozice" min="1" max="{{ vozidla|length }}" required></label>
+      <button class="danger-button">Odstranit</button>
+    </form>
+  </div>
+{% endif %}
+{% endblock %}

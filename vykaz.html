@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>1 - Vložit data o vlaku</h1>
+<form method="post" class="panel form">
+  <label>Číslo vlaku<input name="vlak" value="{{ info.vlak }}"></label>
+  <label>Datum odjezdu<input type="date" name="datum_odjezdu" value="{{ info.datum_odjezdu }}"></label>
+  <label>Výchozí stanice<input name="vychozi_stanice" value="{{ info.vychozi_stanice }}"></label>
+  <label>Konečná stanice<input name="konecna_stanice" value="{{ info.konecna_stanice }}"></label>
+  <label>Potřebná brzdicí procenta<input name="potrebna_procenta" type="number" step="0.01" value="{{ info.potrebna_procenta }}"></label>
+  <label>Poznámky<textarea name="poznamky">{{ info.poznamky }}</textarea></label>
+  <label>Podpis strojvedoucího<input name="podpis_strojvedouciho" value="{{ info.podpis_strojvedouciho }}"></label>
+  <button class="primary">Uložit data vlaku</button>
+</form>
+{% endblock %}

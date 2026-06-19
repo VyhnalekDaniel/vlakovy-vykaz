@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>9 - Databáze</h1>
+{% for typ, cast in [("HDV", databaze.HDV), ("VOZY", databaze.VOZY)] %}
+<section class="panel table-wrap">
+  <h2>Databáze {{ typ }}</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Klíč</th><th>Název</th>
+        {% for rezim in rezimy %}<th>{{ rezim }}</th>{% endfor %}
+        <th>NBU</th><th>Systémy</th><th>Max rychlost</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for klic,d in cast.items() %}
+      <tr>
+        <td>{{ klic }}</td><td>{{ d.nazev }}</td>
+        {% for rezim in rezimy %}<td>{{ d[rezim] }}</td>{% endfor %}
+        <td>{{ d.NBU }}</td><td>{{ d.system_blokovani|join(', ') }}</td><td>{{ d.max_rychlost }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endfor %}
+{% endblock %}

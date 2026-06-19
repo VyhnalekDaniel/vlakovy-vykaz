@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Hlavní stránka</h1>
+  <p>Zjednodušené hlavní menu. Všechny kroky výkazu jsou schované pod vlakovou dokumentací.</p>
+</section>
+
+<div class="menu-grid big-menu">
+  <a class="menu-card" href="{{ url_for('vlakova_dokumentace') }}"><span>📄</span>Vlaková dokumentace</a>
+  <a class="menu-card" href="{{ url_for('databaze') }}"><span>🗃️</span>Databáze</a>
+</div>
+
+{% if info.vlak or pocet %}
+<section class="panel">
+  <h2>Rozpracovaná dokumentace</h2>
+  <div class="grid two">
+    <div class="kv"><span>Vlak</span><strong>{{ info.vlak or 'nezadáno' }}</strong></div>
+    <div class="kv"><span>Trasa</span><strong>{{ info.vychozi_stanice or '?' }} → {{ info.konecna_stanice or '?' }}</strong></div>
+    <div class="kv"><span>Vozidel</span><strong>{{ pocet }}</strong></div>
+  </div>
+  <p class="actions"><a class="primary link-button" href="{{ url_for('vykaz_vozidel') }}">Pokračovat v dokumentaci</a></p>
+</section>
+{% endif %}
+{% endblock %}

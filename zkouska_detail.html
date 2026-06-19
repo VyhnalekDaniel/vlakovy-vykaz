@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero compact">
+  <h1>Výkaz vozidel</h1>
+  <p><strong>{{ info.vlak or 'Vlak nezadán' }}</strong> — {{ info.vychozi_stanice or '?' }} → {{ info.konecna_stanice or '?' }}</p>
+</section>
+
+<section class="panel actions-panel">
+  <div class="menu-grid small-grid">
+    <a class="menu-card" href="{{ url_for('pridat_vozidlo') }}"><span>+</span>Přidat vozidlo</a>
+    <form method="post" action="{{ url_for('otoc_vlak') }}" class="menu-form"><button class="menu-card"><span>6</span>Otočit vlak</button></form>
+    <form method="post" action="{{ url_for('otoc_jednotku') }}" class="menu-form"><button class="menu-card"><span>5</span>Otočit jednotku</button></form>
+    <a class="menu-card" href="{{ url_for('zob') }}"><span>ZOB</span>Vytvořit zprávu o brzdění</a>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Seznam vozidel</h2>
+  {% if not vozidla %}
+    <p>Zatím nejsou zadána žádná vozidla.</p>
+  {% else %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pořadí</th><th>Číslo</th><th>Název</th><th>Typ</th><th>Stav</th><th>Režim</th><th>Brzd. váha</th><th></th></tr></thead>
+        <tbody>
+          {% for v in vozidla %}
+          <tr>
+            <td>{{ loop.index }}</td><td>{{ v.zadane_cislo }}</td><td>{{ v.nazev }}</td><td>{{ v.typ }}</td><td>{{ v.stav }}</td><td>{{ v.rezim_brzdeni }}</td><td>{{ v.brzdici_vaha }}</td>
+            <td><a href="{{ url_for('odstranit') }}">Smazat</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+
+{% if data %}
+<section class="panel">
+  <h2>Rychlý souhrn</h2>
+  <div class="grid two">
+    <div class="kv"><span>Hmotnost vlaku</span><strong>{{ data.vypocet.vlak.hmotnost }} t</strong></div>
+    <div class="kv"><span>Délka</span><strong>{{ '%.2f'|format(data.vypocet.vlak.delka) }} m</strong></div>
+    <div class="kv"><span>Brzdicí váha</span><strong>{{ data.vypocet.vlak.brzdici_vaha }}</strong></div>
+    <div class="kv"><span>Skutečná brzdicí procenta</span><strong>{{ '%.2f'|format(data.info.skutecna_procenta) }} %</strong></div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
