@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>2 - Přidat vozidlo</h1>
+<h1>Přidat vozidlo</h1>
+<section class="panel compact"><p><strong>{{ info.vlak or "Vlak nezadán" }}</strong> — {{ info.vychozi_stanice or "?" }} → {{ info.konecna_stanice or "?" }}</p></section>
 <form method="post" class="panel form">
   <label>Celé číslo vozu nebo lokomotivy<input name="cislo" placeholder="např. 95545811111-4" required></label>
   <label>Typ

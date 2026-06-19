@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Vlak z JŘ</h1>
+<form method="post" class="panel form">
+  <input type="hidden" name="akce" value="hledat">
+  <label>Číslo vlaku
+    <input name="cislo_vlaku" value="{{ cislo }}" placeholder="např. 92665" required>
+  </label>
+  <button class="primary">Vyhledat vlak</button>
+</form>
+
+{% if nalezeny_vlak %}
+<section class="panel found">
+  <h2>Nalezený vlak</h2>
+  <div class="grid two">
+    <div class="kv"><span>Vlak</span><strong>{{ nalezeny_vlak.vlak }}</strong></div>
+    <div class="kv"><span>Odjezd</span><strong>{{ nalezeny_vlak.datum_odjezdu }} {{ nalezeny_vlak.cas_odjezdu }}</strong></div>
+    <div class="kv"><span>Z</span><strong>{{ nalezeny_vlak.vychozi_stanice }}</strong></div>
+    <div class="kv"><span>Do</span><strong>{{ nalezeny_vlak.konecna_stanice }}</strong></div>
+  </div>
+  <form method="post" class="actions">
+    <input type="hidden" name="cislo_vlaku" value="{{ cislo }}">
+    <input type="hidden" name="akce" value="pouzit">
+    <button class="primary">Použít tento vlak</button>
+  </form>
+</section>
+{% elif cislo %}
+<section class="panel">
+  <h2>Vlak nebyl nalezen</h2>
+  <p>Můžeš pokračovat ručně jako libovolný vlak.</p>
+  <a class="primary link-button" href="{{ url_for('libovolny_vlak') }}?vlak={{ cislo }}">Přidat vlak ručně</a>
+</section>
+{% endif %}
+{% endblock %}

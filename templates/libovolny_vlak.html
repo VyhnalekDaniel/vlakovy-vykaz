@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Libovolný vlak</h1>
+<form method="post" class="panel form">
+  <label>Číslo / označení vlaku<input name="vlak" value="{{ request.args.get('vlak', info.vlak) }}" placeholder="např. Sp 92665"></label>
+  <div class="grid two form-grid">
+    <label>Datum odjezdu<input type="date" name="datum_odjezdu" value="{{ info.datum_odjezdu }}"></label>
+    <label>Čas odjezdu<input type="time" name="cas_odjezdu" value="{{ info.cas_odjezdu }}"></label>
+  </div>
+  <label>Výchozí stanice<input name="vychozi_stanice" value="{{ info.vychozi_stanice }}"></label>
+  <label>Konečná stanice<input name="konecna_stanice" value="{{ info.konecna_stanice }}"></label>
+  <label>Sepsáno v<input name="sepsano_v" value="{{ info.sepsano_v }}"></label>
+  <label>Sepsal<input name="sepsal" value="{{ info.sepsal }}" placeholder="jméno osoby, která dokumentaci sepsala"></label>
+  <label>Poznámky<textarea name="poznamky">{{ info.poznamky }}</textarea></label>
+  <button class="primary">Pokračovat na výkaz vozidel</button>
+</form>
+{% endblock %}

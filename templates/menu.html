@@ -1,22 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="hero">
-  <h1>MENU</h1>
-  <p>Webová verze původního konzolového menu. Aktuálně zadáno vozidel: <strong>{{ pocet }}</strong>.</p>
+  <h1>Hlavní stránka</h1>
+  <p>Zjednodušené hlavní menu. Všechny kroky výkazu jsou schované pod vlakovou dokumentací.</p>
 </section>
 
-<div class="menu-grid">
-  <a class="menu-card" href="{{ url_for('data_vlaku') }}"><span>1</span>Vložit data o vlaku</a>
-  <a class="menu-card" href="{{ url_for('pridat_vozidlo') }}"><span>2</span>Přidat vozidlo</a>
-  <a class="menu-card" href="{{ url_for('vykaz') }}"><span>3</span>Vypsat výkaz vozidel a výpočet vlaku</a>
-  <a class="menu-card" href="{{ url_for('odstranit') }}"><span>4</span>Odstranit vozidlo podle pozice</a>
-  <form method="post" action="{{ url_for('otoc_jednotku') }}" class="menu-form"><button class="menu-card"><span>5</span>Otočit jednotku</button></form>
-  <form method="post" action="{{ url_for('otoc_vlak') }}" class="menu-form"><button class="menu-card"><span>6</span>Otočit vlak</button></form>
-  <a class="menu-card" href="{{ url_for('seznam') }}"><span>7</span>Zobrazit zadaná vozidla</a>
-  <a class="menu-card" href="{{ url_for('seznam_podrobne') }}"><span>8</span>Zobrazit zadaná vozidla podrobně</a>
-  <a class="menu-card" href="{{ url_for('databaze') }}"><span>9</span>Zobrazit databázi</a>
-  <form method="post" action="{{ url_for('smazat') }}" class="menu-form" onsubmit="return confirm('Opravdu smazat seznam vozidel?')"><button class="menu-card danger"><span>10</span>Smazat seznam vozidel</button></form>
-  <a class="menu-card" href="{{ url_for('zkouska') }}"><span>11</span>Automaticky vytvořit JZB / ÚZB</a>
-  <form method="post" action="{{ url_for('konec') }}" class="menu-form" onsubmit="return confirm('Ukončit relaci a vymazat data?')"><button class="menu-card muted"><span>0</span>Konec</button></form>
+<div class="menu-grid big-menu">
+  <a class="menu-card" href="{{ url_for('vlakova_dokumentace') }}"><span>📄</span>Vlaková dokumentace</a>
+  <a class="menu-card" href="{{ url_for('databaze') }}"><span>🗃️</span>Databáze</a>
 </div>
+
+{% if info.vlak or pocet %}
+<section class="panel">
+  <h2>Rozpracovaná dokumentace</h2>
+  <div class="grid two">
+    <div class="kv"><span>Vlak</span><strong>{{ info.vlak or 'nezadáno' }}</strong></div>
+    <div class="kv"><span>Trasa</span><strong>{{ info.vychozi_stanice or '?' }} → {{ info.konecna_stanice or '?' }}</strong></div>
+    <div class="kv"><span>Vozidel</span><strong>{{ pocet }}</strong></div>
+  </div>
+  <p class="actions"><a class="primary link-button" href="{{ url_for('vykaz_vozidel') }}">Pokračovat v dokumentaci</a></p>
+</section>
+{% endif %}
 {% endblock %}
