@@ -53,13 +53,21 @@ POZNAMKY_ZOB_MOZNOSTI = [
 
 # Databázi vlaků doděláme později. Struktura je připravená.
 DATABAZE_VLAKU = {
-    # "92665": {
-    #     "druh": "Sp",
-    #     "cislo": "92665",
-    #     "vychozi_stanice": "Pňovany",
-    #     "konecna_stanice": "Plzeň hl.n.",
-    #     "odjezd": "12:31",
-    # },
+     "92665": {
+         "druh": "Sp",
+         "cislo": "92665",
+         "vychozi_stanice": "Pňovany",
+         "konecna_stanice": "Plzeň hl.n.",
+         "odjezd": "12:31",
+     },
+    
+    "365": {
+         "druh": "Ex",
+         "cislo": "365",
+         "vychozi_stanice": "Zámrsk",
+         "konecna_stanice": "Letohrad",
+         "odjezd": "12:31",
+     },
 }
 
 # Tahák úplných čísel vozidel. Pouze pomůcka, výpočet v něm nehledá.
