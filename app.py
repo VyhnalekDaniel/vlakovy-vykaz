@@ -1,7 +1,10 @@
 from copy import deepcopy
+from datetime import datetime
 from os import environ
+import json
+import re
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, Response, flash, redirect, render_template, request, session, url_for
 
 from vypocet import DATABAZE, HIERARCHIE_BLOKOVANI, ziskej_klic_vozidla
 
@@ -110,6 +113,43 @@ def reset_doc():
     session["doc"] = nova_dokumentace()
     session.pop("pending_vlak", None)
     session.modified = True
+
+
+def sloucit_s_vychozi_dokumentaci(nahrana):
+    """Doplní chybějící klíče, aby šly načíst i starší uložené soubory."""
+    vychozi = nova_dokumentace()
+
+    if not isinstance(nahrana, dict):
+        return vychozi
+
+    for cast in ["vlak", "zob", "jzb", "uzb"]:
+        if isinstance(nahrana.get(cast), dict):
+            vychozi[cast].update(nahrana[cast])
+
+    if isinstance(nahrana.get("vozidla"), list):
+        vychozi["vozidla"] = nahrana["vozidla"]
+
+    return vychozi
+
+
+def bezpecny_nazev_souboru(text):
+    text = text or "dokumentace"
+    text = re.sub(r"[^0-9A-Za-zÁ-Žá-ž_-]+", "_", text)
+    text = text.strip("_")
+    return text or "dokumentace"
+
+
+def navrhni_nazev_exportu(doc):
+    vlak = doc.get("vlak", {})
+    casti = [
+        vlak.get("druh", ""),
+        vlak.get("cislo", ""),
+        vlak.get("datum", ""),
+    ]
+    zaklad = "_".join(bezpecny_nazev_souboru(c) for c in casti if c)
+    if not zaklad:
+        zaklad = "vlakova_dokumentace"
+    return f"{zaklad}.json"
 
 # ------------------------------------------------------------
 # Pomocné funkce
@@ -245,6 +285,54 @@ def uloz_zob_z_formulare(doc):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/ulozit-dokumentaci")
+def ulozit_dokumentaci():
+    doc = get_doc()
+    export = {
+        "format": "vlakovy-vykaz-json",
+        "verze": 1,
+        "ulozeno": datetime.now().isoformat(timespec="seconds"),
+        "dokumentace": doc,
+    }
+    data = json.dumps(export, ensure_ascii=False, indent=2)
+    filename = navrhni_nazev_exportu(doc)
+    return Response(
+        data,
+        mimetype="application/json; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@app.route("/nacist-dokumentaci", methods=["GET", "POST"])
+def nacist_dokumentaci():
+    if request.method == "POST":
+        soubor = request.files.get("soubor")
+
+        if not soubor or soubor.filename == "":
+            flash("Vyberte soubor s uloženou dokumentací.")
+            return redirect(url_for("nacist_dokumentaci"))
+
+        try:
+            obsah = soubor.read().decode("utf-8")
+            data = json.loads(obsah)
+        except Exception:
+            flash("Soubor se nepodařilo načíst. Zkontrolujte, že jde o uloženou dokumentaci ve formátu JSON.")
+            return redirect(url_for("nacist_dokumentaci"))
+
+        if isinstance(data, dict) and "dokumentace" in data:
+            doc = data["dokumentace"]
+        else:
+            # Zpětná kompatibilita: kdyby byl uložen přímo obsah dokumentace bez obalu.
+            doc = data
+
+        doc = sloucit_s_vychozi_dokumentaci(doc)
+        save_doc(doc)
+        flash("Dokumentace byla načtena.")
+        return redirect(url_for("vykaz_vozidel"))
+
+    return render_template("nacist_dokumentaci.html")
 
 
 @app.route("/nova-dokumentace")

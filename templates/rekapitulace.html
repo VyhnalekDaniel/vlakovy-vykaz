@@ -24,6 +24,7 @@
   <p>JZB: {{ doc.jzb.vykonana }} | {{ doc.jzb.kde }} | {{ doc.jzb.kdy }} | {{ doc.jzb.kym }} {{ doc.jzb.kym_jiny }}</p>
   <p>ÚZB: {{ doc.uzb.vykonana }} | {{ doc.uzb.kde }} | {{ doc.uzb.kdy }} | {{ doc.uzb.kym }} {{ doc.uzb.kym_jiny }}</p>
   <div class="buttons">
+    <a class="btn" href="{{ url_for('ulozit_dokumentaci') }}">Uložit dokumentaci</a>
     <a class="btn" href="{{ url_for('tisk') }}">Tisk / PDF</a>
     <a class="btn secondary" href="{{ url_for('vykaz_vozidel') }}">Zpět do výkazu vozidel</a>
     <a class="btn secondary" href="{{ url_for('index') }}">Zpět do menu</a>

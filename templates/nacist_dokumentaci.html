@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Načíst dokumentaci{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Načíst uloženou dokumentaci</h1>
+  <p>Vyberte dříve uložený soubor <strong>.json</strong>. Po načtení se dokumentace obnoví a můžete pokračovat ve výkazu vozidel.</p>
+
+  <form method="post" enctype="multipart/form-data">
+    <label>Soubor dokumentace</label>
+    <input type="file" name="soubor" accept="application/json,.json" required>
+
+    <div class="buttons">
+      <button class="btn" type="submit">Načíst dokumentaci</button>
+      <a class="btn secondary" href="{{ url_for('index') }}">Zpět do menu</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
