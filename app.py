@@ -20,9 +20,32 @@ VYKONAL_MOZNOSTI = [
     "Strojvedoucí", "Posunovač", "Vozmistr", "Obsluha vlaku", "Výpravčí", "Jiný ŽDP"
 ]
 
-# Sem si dopíšeš vlastní předvolené poznámky ke zprávě o brzdění.
-# Příklad: "Vlak brzděn v režimu P.",
+# Předvolené poznámky ke zprávě o brzdění.
+# Na stránce ZOB se zobrazí jako checkboxy a lze jich vybrat více najednou.
 POZNAMKY_ZOB_MOZNOSTI = [
+    "V soupravě jsou pouze vozidla s označením CODS",
+    "V soupravě jsou pouze vozidla s označením LAT",
+    "V soupravě jsou pouze vozidla s označením TB S",
+    "V soupravě jsou pouze vozidla s označením SSOD*",
+    "V soupravě jsou vozidla s označením TB 0",
+    "Jízda dovolena dle rychlostního profilu: PASS 1",
+    "Jízda dovolena dle rychlostního profilu: PASS 2",
+    "Jízda dovolena dle rychlostního profilu: PASS 3",
+    "Jízda dovolena dle rychlostního profilu: TILT 6",
+    "V soupravě jsou vozidla s ovládáním nástupních dveří viz Výkaz vozidel",
+    "V soupravě je k službě pohotové HV",
+    "Pochybnost o správném účinku průběžné brzdy",
+    "Centrální napájení vlaku U = 1 kV",
+    "Na AC 25 kV centrální napájení vlaku U = 1,5 kV",
+    "Z ..... do ..... vlak se zavěšeným postrkem",
+    "Z ..... do ..... vlak s vloženou lokomotivou",
+    "Ve vlaku jsou zařazena nešuntující vozidla",
+    "Počet ŽKV s brzdou stupňovitě neodbrzďovatelnou: <číslo>",
+    "Přemostění záchranné brzdy činné",
+    "Soupravu celoročně napájet (CZE, vozy s označením „ee“ nebo „z“)",
+    "V soupravě vozidla s označením n, y",
+    "V soupravě jsou pouze vozidla s označením „o. Zub“",
+    "V soupravě jsou pouze vozidla s označením „a“",
 ]
 
 # Databázi vlaků doděláme později. Struktura je připravená.
