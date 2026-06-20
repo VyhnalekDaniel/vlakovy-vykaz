@@ -3,28 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ title or "Vlaková dokumentace" }}</title>
+  <title>{% block title %}Vlakový výkaz{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <header class="topbar no-print">
-    <a class="brand" href="{{ url_for('menu') }}">Vlaková dokumentace</a>
-    <nav>
-      <a href="{{ url_for('menu') }}">Hlavní</a>
-      <a href="{{ url_for('vlakova_dokumentace') }}">Dokumentace</a>
-      <a href="{{ url_for('vykaz_vozidel') }}">Výkaz vozidel</a>
-      <a href="{{ url_for('zob') }}">ZOB</a>
-      <a href="{{ url_for('databaze') }}">Databáze</a>
-    </nav>
+  <header class="topbar">
+    <a href="{{ url_for('index') }}" class="brand">Vlakový výkaz</a>
   </header>
-
   <main class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div class="messages no-print">
-          {% for category, message in messages %}
-            <div class="message {{ category }}">{{ message }}</div>
-          {% endfor %}
+        <div class="flashbox">
+          {% for message in messages %}<div>{{ message }}</div>{% endfor %}
         </div>
       {% endif %}
     {% endwith %}

@@ -1,17 +1,12 @@
 {% extends "base.html" %}
+{% block title %}Vlaková dokumentace{% endblock %}
 {% block content %}
-<section class="hero">
+<div class="card center">
   <h1>Vlaková dokumentace</h1>
-  <p>Nejdřív vyber vlak. Potom bude následovat výkaz vozidel, zpráva o brzdění a rekapitulace.</p>
-</section>
-
-<div class="menu-grid">
-  <a class="menu-card" href="{{ url_for('vlak_z_jr') }}"><span>🚂</span>Vlak z JŘ</a>
-  <a class="menu-card" href="{{ url_for('libovolny_vlak') }}"><span>✍️</span>Libovolný vlak</a>
+  <div class="grid two">
+    <a class="btn big" href="{{ url_for('vlak_z_jr') }}">Vlak z JŘ</a>
+    <a class="btn big secondary" href="{{ url_for('libovolny_vlak') }}">Libovolný vlak</a>
+  </div>
+  <a class="linkbtn" href="{{ url_for('index') }}">Zpět do menu</a>
 </div>
-
-<section class="panel help">
-  <h2>Ukládání dokumentací</h2>
-  <p>Trvalé ukládání a zpětné načítání dokumentací necháme až na databázovou část. Teď se data drží v aktuální relaci prohlížeče.</p>
-</section>
 {% endblock %}

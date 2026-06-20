@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Změna vlaku{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Změna čísla vlaku</h1>
+  <p>Ve výkazu už je {{ pocet_vozidel }} vozidel. Chceš je ponechat?</p>
+  <p><strong>Nový vlak:</strong> {{ vlak.druh }} {{ vlak.cislo }} | {{ vlak.vychozi_stanice }} → {{ vlak.konecna_stanice }}</p>
+  <form method="post" class="buttons">
+    <button class="btn" name="akce" value="ponechat">Ano, ponechat vozidla</button>
+    <button class="btn danger" name="akce" value="vymazat">Ne, vymazat výkaz vozidel</button>
+  </form>
+</div>
+{% endblock %}

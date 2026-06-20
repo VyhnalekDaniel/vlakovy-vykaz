@@ -1,19 +1,15 @@
 {% extends "base.html" %}
+{% block title %}{{ nazev }}{% endblock %}
 {% block content %}
-<h1>11 - Automaticky vytvořit JZB / ÚZB</h1>
-<form method="post" class="panel form">
-  <label>Zkouška brzdy
-    <select name="zkouska_brzdy">
-      <option value="JZB">JZB</option>
-      <option value="ÚZB">ÚZB</option>
-    </select>
-  </label>
-  <label>Místo zkoušky<input name="misto_zkousky" value="{{ info.misto_zkousky or info.vychozi_stanice }}"></label>
-  <label>Režim brzdy vlaku
-    <select name="rezim_brzdy_vlaku">
-      {% for r in rezimy %}<option value="{{ r }}" {% if info.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
-    </select>
-  </label>
-  <button class="primary">Vytvořit zkoušku brzdy</button>
-</form>
+<div class="card">
+  <h1>{{ nazev }}</h1>
+  <form method="post" class="formgrid">
+    <label>Byla vykonána?<select name="vykonana"><option {% if data.vykonana=='ANO' %}selected{% endif %}>ANO</option><option {% if data.vykonana=='NE' %}selected{% endif %}>NE</option></select></label>
+    <label>Kde<input name="kde" value="{{ data.kde }}"></label>
+    <label>Kdy<input name="kdy" value="{{ data.kdy }}"></label>
+    <label>Kým<select name="kym">{% for m in vykonal_moznosti %}<option {% if data.kym==m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
+    <label class="full">Upřesnění pro Jiný ŽDP<input name="kym_jiny" value="{{ data.kym_jiny }}"></label>
+    <button class="btn full" type="submit">Uložit {{ nazev }}</button>
+  </form>
+</div>
 {% endblock %}
