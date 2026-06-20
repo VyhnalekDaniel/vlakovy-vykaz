@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Vlaková dokumentace{% endblock %}
+{% block title %}Hlavní menu{% endblock %}
 {% block content %}
-<div class="card"><h1>Vlaková dokumentace</h1><p class="muted">Vyber způsob založení dokumentace.</p></div>
-<div class="grid two">
-  <a class="big-button" href="{{ url_for('vlak_z_jr') }}">Vlak z JŘ</a>
-  <a class="big-button" href="{{ url_for('libovolny_vlak') }}">Libovolný vlak</a>
+<div class="card center">
+  <h1>Hlavní menu</h1>
+  <div class="grid two">
+    <a class="btn big" href="{{ url_for('nova_dokumentace_route') }}">Vlaková dokumentace</a>
+    <a class="btn big secondary" href="{{ url_for('databaze') }}">Databáze</a>
+  </div>
 </div>
-<div class="nav"><a href="{{ url_for('index') }}">← Hlavní menu</a></div>
 {% endblock %}

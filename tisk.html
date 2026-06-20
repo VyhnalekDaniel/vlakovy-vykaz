@@ -1,16 +1,28 @@
 {% extends "base.html" %}
-{% block title %}{{ nazev }}{% endblock %}
+{% block title %}ZOB{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>{{ nazev }}</h1>
-  <form method="post">
-    <label>Byla vykonána?</label><select name="vykonana"><option {% if data.vykonana == 'ANO' %}selected{% endif %}>ANO</option><option {% if data.vykonana != 'ANO' %}selected{% endif %}>NE</option></select>
-    <label>Kde</label><input name="kde" value="{{ data.kde }}">
-    <label>Kdy</label><input name="kdy" value="{{ data.kdy }}" placeholder="čas / datum">
-    <label>Kým</label><select name="kym">{% for m in vykonal_moznosti %}<option {% if data.kym == m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select>
-    <label>Jiný ŽDP - upřesnění</label><input name="kym_jiny" value="{{ data.kym_jiny }}">
-    <button type="submit">Uložit {{ nazev }}</button>
+  <h1>Zpráva o brzdění</h1>
+  <form method="post" class="formgrid">
+    <label>Potřebná brzdicí procenta<input name="potrebna_procenta" value="{{ doc.zob.potrebna_procenta }}"></label>
+    <label>Režim brzdy vlaku<select name="rezim_brzdy_vlaku">{% for r in rezimy %}<option {% if doc.zob.rezim_brzdy_vlaku==r %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+    <label class="full">Doprovod<input name="doprovod" value="{{ doc.zob.doprovod }}"></label>
+    <label class="full">Poznámky<textarea name="poznamky">{{ doc.zob.poznamky }}</textarea></label>
+    <div class="full">
+      <h3>Přednastavené poznámky</h3>
+      {% if poznamky_moznosti %}
+        {% for p in poznamky_moznosti %}
+          <label class="check"><input type="checkbox" name="poznamky_zob" value="{{ p }}" {% if p in doc.zob.poznamky_vybrane %}checked{% endif %}> {{ p }}</label>
+        {% endfor %}
+      {% else %}
+        <p>Zatím nejsou doplněné přednastavené poznámky.</p>
+      {% endif %}
+    </div>
+    <div class="buttons full">
+      <button class="btn secondary" name="akce" value="jzb">Uložit a vyplnit JZB</button>
+      <button class="btn secondary" name="akce" value="uzb">Uložit a vyplnit ÚZB</button>
+      <button class="btn" name="akce" value="rekapitulace">Uložit a rekapitulace</button>
+    </div>
   </form>
 </div>
-<div class="nav"><a href="{{ url_for('zob') }}">← Zpět na ZOB</a></div>
 {% endblock %}

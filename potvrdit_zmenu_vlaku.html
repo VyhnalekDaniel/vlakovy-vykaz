@@ -1,17 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Vlak z JŘ{% endblock %}
+{% block title %}Vlaková dokumentace{% endblock %}
 {% block content %}
-<div class="card">
-  <h1>Vlak z JŘ</h1>
-  <form method="post">
-    <label>Číslo vlaku</label>
-    <input name="cislo" inputmode="numeric" required>
-    <label>Datum</label>
-    <input name="datum" type="date">
-    <label>Sepsal</label>
-    <input name="sepsal">
-    <button type="submit">Načíst vlak</button>
-  </form>
+<div class="card center">
+  <h1>Vlaková dokumentace</h1>
+  <div class="grid two">
+    <a class="btn big" href="{{ url_for('vlak_z_jr') }}">Vlak z JŘ</a>
+    <a class="btn big secondary" href="{{ url_for('libovolny_vlak') }}">Libovolný vlak</a>
+  </div>
+  <a class="linkbtn" href="{{ url_for('index') }}">Zpět do menu</a>
 </div>
-<div class="nav"><a href="{{ url_for('vlakova_dokumentace') }}">← Zpět</a></div>
 {% endblock %}

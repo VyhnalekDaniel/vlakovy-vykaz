@@ -1,13 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Změna vlaku{% endblock %}
+{% block title %}Libovolný vlak{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Změna vlaku</h1>
-  <p>Ve výkazu už je {{ pocet_vozidel }} vozidel. Chceš je ponechat?</p>
-  <p><strong>{{ vlak.druh }} {{ vlak.cislo }}</strong> {{ vlak.vychozi_stanice }} → {{ vlak.konecna_stanice }}</p>
-  <form method="post" class="button-row">
-    <button name="akce" value="ponechat">Ano, ponechat vozidla</button>
-    <button class="danger" name="akce" value="vymazat">Ne, vymazat výkaz vozidel</button>
+  <h1>Libovolný vlak</h1>
+  <form method="post" class="formgrid">
+    <label>Druh vlaku<input name="druh" placeholder="Os, Sp, R, Lv..."></label>
+    <label>Číslo vlaku<input name="cislo" value="{{ cislo }}" required></label>
+    <label>Datum<input type="date" name="datum"></label>
+    <label>Odjezd<input type="time" name="odjezd"></label>
+    <label>Výchozí stanice<input name="vychozi_stanice"></label>
+    <label>Konečná stanice<input name="konecna_stanice"></label>
+    <label>Sepsáno v<input name="sepsano_v"></label>
+    <label>Sepsal<input name="sepsal"></label>
+    <label class="full">Poznámky<textarea name="poznamky"></textarea></label>
+    <button class="btn full" type="submit">Pokračovat do výkazu vozidel</button>
   </form>
 </div>
 {% endblock %}

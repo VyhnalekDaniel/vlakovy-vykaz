@@ -1,15 +1,57 @@
 {% extends "base.html" %}
-{% block title %}Přidat vozidlo{% endblock %}
+{% block title %}Výkaz vozidel{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Přidat vozidlo</h1>
-  <form method="post">
-    <label>Číslo vozidla</label><input name="cislo" required>
-    <label>Typ</label><select name="typ"><option>HDV</option><option>VOZ</option></select>
-    <label>Stav HDV</label><select name="stav"><option>činné</option><option>dopravované</option></select>
-    <label>Režim brzdění</label><select name="rezim_brzdeni">{% for r in rezimy %}<option>{{ r }}</option>{% endfor %}</select>
-    <button type="submit">Přidat</button>
-  </form>
+  <h1>Výkaz vozidel</h1>
+  <p><strong>Vlak:</strong> {{ doc.vlak.druh }} {{ doc.vlak.cislo }} | {{ doc.vlak.vychozi_stanice }} → {{ doc.vlak.konecna_stanice }}</p>
+  <div class="buttons">
+    <a class="btn" href="{{ url_for('pridat_vozidlo') }}">Přidat vozidlo</a>
+    <form method="post" action="{{ url_for('otoc_vlak') }}"><button class="btn secondary">Otočit vlak</button></form>
+    <form method="post" action="{{ url_for('otoc_jednotku') }}"><button class="btn secondary">Otočit jednotku</button></form>
+    <a class="btn" href="{{ url_for('zob') }}">Vytvořit ZOB</a>
+  </div>
 </div>
-<div class="nav"><a href="{{ url_for('vykaz_vozidel') }}">← Zpět do výkazu</a></div>
+
+<div class="card">
+  <h2>Vozidla</h2>
+  {% if vozidla %}
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Číslo</th><th>Název</th><th>Typ/stav</th><th>Režim</th><th>Brz. váha</th><th>Pořadí</th><th>Akce</th></tr></thead>
+        <tbody>
+        {% for v in vozidla %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ v.zadane_cislo }}</td>
+            <td>{{ v.nazev }}</td>
+            <td>{{ v.typ }} / {{ v.stav }}</td>
+            <td>{{ v.rezim_brzdeni }}</td>
+            <td>{{ v.brzdici_vaha }}</td>
+            <td>
+              <form method="post" action="{{ url_for('posun_vozidlo', index=loop.index0, smer='nahoru') }}" class="inline"><button>↑</button></form>
+              <form method="post" action="{{ url_for('posun_vozidlo', index=loop.index0, smer='dolu') }}" class="inline"><button>↓</button></form>
+              <form method="post" action="{{ url_for('presun_vozidlo') }}" class="inline moveform">
+                <input type="hidden" name="index" value="{{ loop.index0 }}">
+                <input type="number" name="nova_pozice" min="1" max="{{ vozidla|length }}" placeholder="poz.">
+                <button>Přesunout</button>
+              </form>
+            </td>
+            <td><form method="post" action="{{ url_for('odstranit_vozidlo', index=loop.index0) }}"><button class="danger small">Smazat</button></form></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Zatím nejsou zadána žádná vozidla.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Souhrn</h2>
+  <p>Hmotnost vlaku: {{ '%.1f'|format(vypocet.vlak.hmotnost) }} t</p>
+  <p>Délka vlaku: {{ '%.2f'|format(vypocet.vlak.delka) }} m</p>
+  <p>Nápravy: {{ vypocet.vlak.pocet_naprav }}</p>
+  <p>Brzdicí váha: {{ vypocet.vlak.brzdici_vaha }}</p>
+</div>
 {% endblock %}

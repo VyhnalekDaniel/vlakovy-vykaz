@@ -1,12 +1,24 @@
-{% extends "base.html" %}
-{% block title %}Hlavní menu{% endblock %}
-{% block content %}
-<div class="card title-card">
-  <h1>Vlaková dokumentace</h1>
-  <p class="muted">Pracovní postup: vlak → vozidla → ZOB → rekapitulace.</p>
-</div>
-<div class="grid two">
-  <a class="big-button" href="{{ url_for('nova_dokumentace_route') }}">Vlaková dokumentace</a>
-  <a class="big-button" href="{{ url_for('databaze') }}">Databáze</a>
-</div>
-{% endblock %}
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Vlakový výkaz{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a href="{{ url_for('index') }}" class="brand">Vlakový výkaz</a>
+  </header>
+  <main class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flashbox">
+          {% for message in messages %}<div>{{ message }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

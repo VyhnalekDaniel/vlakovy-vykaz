@@ -1,27 +1,15 @@
 {% extends "base.html" %}
-{% block title %}ZOB{% endblock %}
+{% block title %}Přidat vozidlo{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Zpráva o brzdění</h1>
-  <form method="post">
-    <label>Potřebná brzdicí procenta</label><input name="potrebna_procenta" type="number" step="0.01" value="{{ doc.zob.potrebna_procenta }}">
-    <label>Brzdicí režim vlaku</label><select name="rezim_brzdy_vlaku">{% for r in rezimy %}<option {% if doc.zob.rezim_brzdy_vlaku == r %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
-    <label>Doprovod</label><input name="doprovod" value="{{ doc.zob.doprovod }}">
-    <label>Poznámky</label><textarea name="poznamky">{{ doc.zob.poznamky }}</textarea>
-    <h2>Přednastavené poznámky</h2>
-    {% if poznamky_moznosti %}
-      {% for p in poznamky_moznosti %}
-        <label class="check"><input type="checkbox" name="poznamky_zob" value="{{ p }}" {% if p in doc.zob.poznamky_vybrane %}checked{% endif %}> {{ p }}</label>
-      {% endfor %}
-    {% else %}
-      <p class="muted">Seznam přednastavených poznámek je zatím prázdný. Doplníš ho v app.py do POZNAMKY_ZOB_MOZNOSTI.</p>
-    {% endif %}
-    <div class="button-row">
-      <button name="akce" value="ulozit">Uložit a rekapitulace</button>
-      <button name="akce" value="jzb">Uložit a vyplnit JZB</button>
-      <button name="akce" value="uzb">Uložit a vyplnit ÚZB</button>
-    </div>
+  <h1>Přidat vozidlo</h1>
+  <form method="post" class="formgrid">
+    <label class="full">Úplné číslo vozidla<input name="cislo" required></label>
+    <label>Typ<select name="typ"><option>HDV</option><option>VOZ</option></select></label>
+    <label>Stav HDV<select name="stav"><option>činné</option><option>dopravované</option></select></label>
+    <label>Režim brzdění<select name="rezim_brzdeni">{% for r in rezimy %}<option>{{ r }}</option>{% endfor %}</select></label>
+    <button class="btn full" type="submit">Přidat</button>
   </form>
+  <a class="linkbtn" href="{{ url_for('vykaz_vozidel') }}">Zpět do výkazu</a>
 </div>
-<div class="nav"><a href="{{ url_for('vykaz_vozidel') }}">← Zpět do výkazu vozidel</a></div>
 {% endblock %}
